@@ -19,6 +19,20 @@ public static partial class Ollama
                 this.images = images;
             }
         }
+
+        public class Chat
+        {
+            public string model;
+            public Message[] messages;
+            public bool stream;
+
+            public Chat(string model, Message[] messages, bool stream)
+            {
+                this.model = model;
+                this.messages = messages;
+                this.stream = stream;
+            }
+        }
     }
 
     private static class Response
@@ -26,6 +40,11 @@ public static partial class Ollama
         public class Generate : BaseResponse
         {
             public string response;
+        }
+
+        public class Chat : BaseResponse
+        {
+            public Message message;
         }
 
         public abstract class BaseResponse
@@ -63,6 +82,18 @@ public static partial class Ollama
                     public string quantization_level;
                 }
             }
+        }
+    }
+
+    private class Message
+    {
+        public string role;
+        public string content;
+
+        public Message(string role, string content)
+        {
+            this.role = role;
+            this.content = content;
         }
     }
 }

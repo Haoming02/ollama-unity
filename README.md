@@ -31,6 +31,8 @@ The user machine needs to have a working ollama setup already
 - **Generate**
 - **Generate *(Stream)***
 - **Generate *(Image)***
+- **Chat**
+- **Chat *(Stream)***
 
 ## Known Issue
 - You need `v0.1.34` or later of ollama for `GenerateWithImage` to work properly
