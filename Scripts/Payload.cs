@@ -39,5 +39,28 @@ public static partial class Ollama
             public int eval_count;
             public long eval_duration;
         }
+
+        public class List
+        {
+            public Model[] models;
+
+            public class Model
+            {
+                public string name;
+                public DateTime modified_at;
+                public long size;
+                public string digest;
+                public ModelDetail details;
+
+                public class ModelDetail
+                {
+                    public string format;
+                    public string family;
+                    public string[] families;
+                    public string parameter_size;
+                    public string quantization_level;
+                }
+            }
+        }
     }
 }

@@ -39,8 +39,7 @@ public static partial class Ollama
         using var streamReader = new StreamReader(httpResponse.GetResponseStream());
 
         string result = streamReader.ReadToEnd();
-        var response = JsonConvert.DeserializeObject<T>(result);
-        return response;
+        return JsonConvert.DeserializeObject<T>(result);
     }
 
     private static async Task<T> GetRequest<T>(string endpoint)
@@ -64,7 +63,6 @@ public static partial class Ollama
         using var streamReader = new StreamReader(httpResponse.GetResponseStream());
 
         string result = streamReader.ReadToEnd();
-        var response = JsonConvert.DeserializeObject<T>(result);
-        return response;
+        return JsonConvert.DeserializeObject<T>(result);
     }
 }
