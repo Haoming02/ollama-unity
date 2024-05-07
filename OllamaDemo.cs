@@ -6,6 +6,9 @@ public class OllamaDemo : MonoBehaviour
 {
     [SerializeField]
     private Text display;
+    [SerializeField]
+    [Tooltip("Remember to:\n- Enable Read/Write\n- Disable Compression")]
+    private Texture2D image;
 
     private bool isStream = false;
 
@@ -32,6 +35,22 @@ public class OllamaDemo : MonoBehaviour
         {
             display.text = "processing...";
             var response = await Ollama.Generate(input);
+            display.text = response;
+        }
+    }
+
+    /// <summary> Called by UnityEngine.UI.Button </summary>
+    public async void OnSendImage()
+    {
+        if (isStream)
+        {
+            display.text = string.Empty;
+            await Ollama.GenerateWithImageStream("What is in this picture?", image, (string text) => { display.text += text; });
+        }
+        else
+        {
+            display.text = "processing...";
+            var response = await Ollama.GenerateWithImage("What is in this picture?", image);
             display.text = response;
         }
     }

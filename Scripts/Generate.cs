@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
+using UnityEngine;
 
 public static partial class Ollama
 {
@@ -17,6 +18,24 @@ public static partial class Ollama
     public static async Task GenerateStream(string prompt, Action<string> onTextReceived, string model = "llama3")
     {
         var request = new Request.Generate(model, prompt, true);
+        string payload = JsonConvert.SerializeObject(request);
+        await PostRequestStream(payload, Endpoints.GENERATE, (Response.Generate response) => { onTextReceived?.Invoke(response.response); });
+    }
+
+
+    /// <summary> Generate a response for a given prompt and image from a multimodal model </summary>
+    public static async Task<string> GenerateWithImage(string prompt, Texture2D image, string model = "llava")
+    {
+        var request = new Request.Generate(model, prompt, false, new string[] { Convert.ToBase64String(image.EncodeToJPG()) });
+        string payload = JsonConvert.SerializeObject(request);
+        var response = await PostRequest<Response.Generate>(payload, Endpoints.GENERATE);
+        return response.response;
+    }
+
+    /// <summary> Stream a response for a given prompt and image from a multimodal model </summary>
+    public static async Task GenerateWithImageStream(string prompt, Texture2D image, Action<string> onTextReceived, string model = "llava")
+    {
+        var request = new Request.Generate(model, prompt, true, new string[] { Convert.ToBase64String(image.EncodeToJPG()) });
         string payload = JsonConvert.SerializeObject(request);
         await PostRequestStream(payload, Endpoints.GENERATE, (Response.Generate response) => { onTextReceived?.Invoke(response.response); });
     }
