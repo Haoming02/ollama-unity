@@ -14,18 +14,18 @@ public class OllamaDemo : MonoBehaviour
 
     async void Start()
     {
-        var (mdl, mm_mdl) = await Ollama.Lists();
+        var (mdl, mm_mdl) = await Ollama.ListCategorized();
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.AppendLine("Regular Models:");
         for (int i = 0; i < mdl.Length; i++)
-            stringBuilder.AppendLine($"[{i + 1:D2}] {mdl[i]}");
+            stringBuilder.AppendLine($"  {i + 1:D2}. {mdl[i]}");
 
         stringBuilder.AppendLine(string.Empty);
 
         stringBuilder.AppendLine("Multimodal Models:");
         for (int i = 0; i < mm_mdl.Length; i++)
-            stringBuilder.AppendLine($"[{i + 1:D2}] {mm_mdl[i]}");
+            stringBuilder.AppendLine($"  {i + 1:D2}. {mm_mdl[i]}");
 
         display.text = stringBuilder.ToString();
     }

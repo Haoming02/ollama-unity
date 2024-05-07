@@ -17,24 +17,24 @@ public static partial class Ollama
         return models;
     }
 
-    /// <summary> List models that are available locally, categorized by types </summary>
-    /// <returns>(regular models, multimodal models)</returns>
-    public static async Task<(string[], string[])> Lists()
+    /// <summary> List models that are available locally, categorized by family </summary>
+    /// <returns> (regular models, multimodal models) </returns>
+    public static async Task<(string[], string[])> ListCategorized()
     {
         var response = await GetRequest<Response.List>(Endpoints.LIST);
+
+        List<string> text_model = new List<string>();
+        List<string> multimodal = new List<string>();
+
         int l = response.models.Length;
-
-        List<string> models = new List<string>();
-        List<string> mm_models = new List<string>();
-
         for (int i = 0; i < l; i++)
         {
-            if (Array.Exists(response.models[i].details.families, family => family != "llama"))
-                mm_models.Add(response.models[i].name);
+            if (!Array.Exists(response.models[i].details.families, family => family != "llama"))
+                text_model.Add(response.models[i].name);
             else
-                models.Add(response.models[i].name);
+                multimodal.Add(response.models[i].name);
         }
 
-        return (models.ToArray(), mm_models.ToArray());
+        return (text_model.ToArray(), multimodal.ToArray());
     }
 }
