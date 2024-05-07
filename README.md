@@ -19,4 +19,5 @@ The user macnhine needs to have working ollama setups already
 
 ## Features
 
+- **List**
 - **Chat**
