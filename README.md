@@ -18,7 +18,11 @@ The user machine needs to have a working ollama setup already
         ```
     - Recommend `llava` for image captioning
         ```bash
-        ollama run llava
+        ollama pull llava
+        ```
+    - For coding-related inquiries, also try out `stable-code`
+        ```bash
+        ollama pull stable-code
         ```
 
 ## Features
@@ -29,5 +33,5 @@ The user machine needs to have a working ollama setup already
 - **Generate *(Image)***
 
 ## Known Issue
-- You need **ollama** `v0.1.34` or later for `GenerateWithImage` to work properly
+- You need `v0.1.34` or later of ollama for `GenerateWithImage` to work properly
     > https://github.com/ollama/ollama/issues/4163
