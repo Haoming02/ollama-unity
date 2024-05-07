@@ -10,7 +10,7 @@ public class OllamaChatDemo : MonoBehaviour
 
     void Start()
     {
-        Ollama.InitChat();
+        Ollama.LoadChatHistory();
         display.text = string.Empty;
     }
 
@@ -27,6 +27,18 @@ public class OllamaChatDemo : MonoBehaviour
             var response = await Ollama.Chat(input);
             display.text = response;
         }
+    }
+
+    /// <summary> Called by UnityEngine.UI.Button </summary>
+    public void SaveChat()
+    {
+        Ollama.SaveChatHistory();
+    }
+
+    /// <summary> Called by UnityEngine.UI.Button </summary>
+    public void ResetChat()
+    {
+        Ollama.InitChat();
     }
 
     public void ToggleStream(bool val)
