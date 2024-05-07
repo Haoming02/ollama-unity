@@ -24,4 +24,5 @@ The user machine needs to have a working ollama setup already
 ## Features
 
 - **List**
-- **Chat**
+- **Generate**
+- **Generate *(Stream)***

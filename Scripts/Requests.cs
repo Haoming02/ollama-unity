@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ public static partial class Ollama
         public const string LIST = "api/tags";
     }
 
-    private static async Task<T> PostRequest<T>(string payload, string endpoint)
+    private static async Task<T> PostRequest<T>(string payload, string endpoint) where T : Response.BaseResponse
     {
         HttpWebRequest httpWebRequest;
 
@@ -40,6 +41,42 @@ public static partial class Ollama
 
         string result = streamReader.ReadToEnd();
         return JsonConvert.DeserializeObject<T>(result);
+    }
+
+    private static async Task PostRequestStream<T>(string payload, string endpoint, Action<T> onChunkReceived) where T : Response.BaseResponse
+    {
+        HttpWebRequest httpWebRequest;
+
+        try
+        {
+            httpWebRequest = (HttpWebRequest)WebRequest.Create($"{SERVER}{endpoint}");
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.Method = "POST";
+
+            using var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream());
+            streamWriter.Write(payload);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"{e.Message}\n\t{e.StackTrace}");
+            return;
+        }
+
+        using var httpResponse = await httpWebRequest.GetResponseAsync();
+        using var responseStream = httpResponse.GetResponseStream();
+
+        StreamReader reader = new StreamReader(responseStream, Encoding.UTF8);
+        bool isEnd = false;
+
+        while (!isEnd)
+        {
+            string result = await reader.ReadLineAsync();
+            var response = JsonConvert.DeserializeObject<T>(result);
+            isEnd = response.done;
+
+            if (!isEnd)
+                onChunkReceived?.Invoke(response);
+        }
     }
 
     private static async Task<T> GetRequest<T>(string endpoint)
