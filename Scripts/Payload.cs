@@ -25,12 +25,14 @@ public static partial class Ollama
             public string model;
             public Message[] messages;
             public bool stream;
+            public string[] images;
 
-            public Chat(string model, Message[] messages, bool stream)
+            public Chat(string model, Message[] messages, bool stream, string[] images = null)
             {
                 this.model = model;
                 this.messages = messages;
                 this.stream = stream;
+                this.images = images;
             }
         }
     }
@@ -89,11 +91,13 @@ public static partial class Ollama
     {
         public string role;
         public string content;
+        public string[] images;
 
-        public Message(string role, string content)
+        public Message(string role, string content, string[] images = null)
         {
             this.role = role;
             this.content = content;
+            this.images = images;
         }
     }
 }

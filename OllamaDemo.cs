@@ -36,7 +36,11 @@ public class OllamaDemo : MonoBehaviour
         if (isStream)
         {
             display.text = string.Empty;
-            await Ollama.GenerateStream(input, (string text) => { display.text += text; });
+            await Ollama.GenerateStream(input, (string text) =>
+            {
+                if (display != null)
+                    display.text += text;
+            });
         }
         else
         {
@@ -52,7 +56,11 @@ public class OllamaDemo : MonoBehaviour
         if (isStream)
         {
             display.text = string.Empty;
-            await Ollama.GenerateWithImageStream("What is in this picture?", image, (string text) => { display.text += text; });
+            await Ollama.GenerateWithImageStream("What is in this picture?", image, (string text) =>
+            {
+                if (display != null)
+                    display.text += text;
+            });
         }
         else
         {

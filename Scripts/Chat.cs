@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 public static partial class Ollama
 {
@@ -71,6 +72,46 @@ public static partial class Ollama
             ChatHistory.Add(new Message("system", system));
 
         ChatHistory.Add(new Message("user", prompt));
+
+        var request = new Request.Chat(model, ChatHistory.ToArray(), true);
+        string payload = JsonConvert.SerializeObject(request);
+
+        StringBuilder reply = new StringBuilder();
+
+        await PostRequestStream(payload, Endpoints.CHAT, (Response.Chat response) =>
+        {
+            onTextReceived?.Invoke(response.message.content);
+            reply.Append(response.message.content);
+        });
+
+        ChatHistory.Add(new Message("assistant", reply.ToString()));
+    }
+
+
+    /// <summary> Generate a response for a given prompt and image using a provided model with history </summary>
+    public static async Task<string> ChatWithImage(string prompt, Texture2D image, string system = null, string model = "llava")
+    {
+        if (system != null)
+            ChatHistory.Add(new Message("system", system));
+
+        ChatHistory.Add(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
+
+        var request = new Request.Chat(model, ChatHistory.ToArray(), false);
+        string payload = JsonConvert.SerializeObject(request);
+        var response = await PostRequest<Response.Chat>(payload, Endpoints.CHAT);
+
+        ChatHistory.Add(response.message);
+
+        return response.message.content;
+    }
+
+    /// <summary> Stream a response for a given prompt and image using a provided model with history </summary>
+    public static async Task ChatWithImageStream(string prompt, Texture2D image, Action<string> onTextReceived, string system = null, string model = "llava")
+    {
+        if (system != null)
+            ChatHistory.Add(new Message("system", system));
+
+        ChatHistory.Add(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), true);
         string payload = JsonConvert.SerializeObject(request);

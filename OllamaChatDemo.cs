@@ -5,6 +5,9 @@ public class OllamaChatDemo : MonoBehaviour
 {
     [SerializeField]
     private Text display;
+    [SerializeField]
+    [Tooltip("Remember to:\n- Enable Read/Write\n- Disable Compression")]
+    private Texture2D image;
 
     private bool isStream = false;
 
@@ -20,7 +23,11 @@ public class OllamaChatDemo : MonoBehaviour
         if (isStream)
         {
             display.text = string.Empty;
-            await Ollama.ChatStream(input, (string text) => { display.text += text; });
+            await Ollama.ChatStream(input, (string text) =>
+            {
+                if (display != null)
+                    display.text += text;
+            });
         }
         else
         {
