@@ -45,8 +45,13 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
         ```
 - **ChatStream()**
     - Same as above
+- **ChatWithImage()**
+    - Same as above
+- **ChatWithImageStream()**
+    - Same as above
 - **InitChat()**
     - Initialize / Reset the chat history
+    - `historyLimit`: The number of messages to keep in memory *(defaults to `16`)*
 - **SaveChatHistory()**
     - Save the current chat history to the specified path *(defaults to `Application.persistentDataPath`)*
 - **LoadChatHistory()**

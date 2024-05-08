@@ -8,43 +8,49 @@ using UnityEngine;
 
 public static partial class Ollama
 {
-    private static List<Message> ChatHistory;
+    private static Queue<Message> ChatHistory;
+    private static int HistoryLimit = -1;
 
     /// <summary> Start a brand new chat </summary>
-    public static void InitChat() => ChatHistory = new List<Message>();
+    public static void InitChat(int historyLimit = 16)
+    {
+        ChatHistory = new Queue<Message>();
+        HistoryLimit = historyLimit;
+    }
 
     /// <summary> Save the current Chat History to the specified path </summary>
     public static void SaveChatHistory(string fileName = null)
     {
         if (fileName == null)
-            fileName = Path.Combine(UnityEngine.Application.persistentDataPath, "chat.dat");
+            fileName = Path.Combine(Application.persistentDataPath, "chat.dat");
 
         using var stream = File.Open(fileName, FileMode.Create);
         using var writer = new BinaryWriter(stream, Encoding.UTF8, false);
 
         var data = JsonConvert.SerializeObject(ChatHistory);
         writer.Write(IO.Encrypt(data));
-        UnityEngine.Debug.Log($"Chat History saved to \"{fileName}\"");
+        Debug.Log($"Chat History saved to \"{fileName}\"");
     }
 
     /// <summary> Load a Chat History from the specified path </summary>
-    public static void LoadChatHistory(string fileName = null)
+    public static void LoadChatHistory(string fileName = null, int historyLimit = 16)
     {
         if (fileName == null)
-            fileName = Path.Combine(UnityEngine.Application.persistentDataPath, "chat.dat");
+            fileName = Path.Combine(Application.persistentDataPath, "chat.dat");
 
         if (File.Exists(fileName))
         {
             using var stream = File.Open(fileName, FileMode.Open);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
-            ChatHistory = JsonConvert.DeserializeObject<List<Message>>(IO.Decrypt(reader.ReadString()));
-            UnityEngine.Debug.Log($"Chat History loaded from \"{fileName}\"");
+            ChatHistory = JsonConvert.DeserializeObject<Queue<Message>>(IO.Decrypt(reader.ReadString()));
+            HistoryLimit = historyLimit;
+            Debug.Log($"Chat History loaded from \"{fileName}\"");
         }
         else
         {
-            UnityEngine.Debug.LogWarning($"Chat History \"{fileName}\" does not exist!");
-            InitChat();
+            InitChat(historyLimit);
+            Debug.LogWarning($"Chat History \"{fileName}\" does not exist!");
         }
     }
 
@@ -52,15 +58,18 @@ public static partial class Ollama
     public static async Task<string> Chat(string prompt, string system = null, string model = "llama3")
     {
         if (system != null)
-            ChatHistory.Add(new Message("system", system));
+            ChatHistory.Enqueue(new Message("system", system));
 
-        ChatHistory.Add(new Message("user", prompt));
+        ChatHistory.Enqueue(new Message("user", prompt));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), false);
         string payload = JsonConvert.SerializeObject(request);
         var response = await PostRequest<Response.Chat>(payload, Endpoints.CHAT);
 
-        ChatHistory.Add(response.message);
+        ChatHistory.Enqueue(response.message);
+
+        while (ChatHistory.Count > HistoryLimit)
+            ChatHistory.Dequeue();
 
         return response.message.content;
     }
@@ -69,9 +78,9 @@ public static partial class Ollama
     public static async Task ChatStream(string prompt, Action<string> onTextReceived, string system = null, string model = "llama3")
     {
         if (system != null)
-            ChatHistory.Add(new Message("system", system));
+            ChatHistory.Enqueue(new Message("system", system));
 
-        ChatHistory.Add(new Message("user", prompt));
+        ChatHistory.Enqueue(new Message("user", prompt));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), true);
         string payload = JsonConvert.SerializeObject(request);
@@ -84,7 +93,10 @@ public static partial class Ollama
             reply.Append(response.message.content);
         });
 
-        ChatHistory.Add(new Message("assistant", reply.ToString()));
+        ChatHistory.Enqueue(new Message("assistant", reply.ToString()));
+
+        while (ChatHistory.Count > HistoryLimit)
+            ChatHistory.Dequeue();
     }
 
 
@@ -92,15 +104,18 @@ public static partial class Ollama
     public static async Task<string> ChatWithImage(string prompt, Texture2D image, string system = null, string model = "llava")
     {
         if (system != null)
-            ChatHistory.Add(new Message("system", system));
+            ChatHistory.Enqueue(new Message("system", system));
 
-        ChatHistory.Add(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
+        ChatHistory.Enqueue(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), false);
         string payload = JsonConvert.SerializeObject(request);
         var response = await PostRequest<Response.Chat>(payload, Endpoints.CHAT);
 
-        ChatHistory.Add(response.message);
+        ChatHistory.Enqueue(response.message);
+
+        while (ChatHistory.Count > HistoryLimit)
+            ChatHistory.Dequeue();
 
         return response.message.content;
     }
@@ -109,9 +124,9 @@ public static partial class Ollama
     public static async Task ChatWithImageStream(string prompt, Texture2D image, Action<string> onTextReceived, string system = null, string model = "llava")
     {
         if (system != null)
-            ChatHistory.Add(new Message("system", system));
+            ChatHistory.Enqueue(new Message("system", system));
 
-        ChatHistory.Add(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
+        ChatHistory.Enqueue(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), true);
         string payload = JsonConvert.SerializeObject(request);
@@ -124,6 +139,9 @@ public static partial class Ollama
             reply.Append(response.message.content);
         });
 
-        ChatHistory.Add(new Message("assistant", reply.ToString()));
+        ChatHistory.Enqueue(new Message("assistant", reply.ToString()));
+
+        while (ChatHistory.Count > HistoryLimit)
+            ChatHistory.Dequeue();
     }
 }
