@@ -97,6 +97,8 @@ public static partial class Ollama
 
         while (ChatHistory.Count > HistoryLimit)
             ChatHistory.Dequeue();
+
+        OnStreamFinished?.Invoke();
     }
 
 
@@ -143,5 +145,7 @@ public static partial class Ollama
 
         while (ChatHistory.Count > HistoryLimit)
             ChatHistory.Dequeue();
+
+        OnStreamFinished?.Invoke();
     }
 }

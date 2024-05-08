@@ -20,6 +20,7 @@ public static partial class Ollama
         var request = new Request.Generate(model, prompt, true);
         string payload = JsonConvert.SerializeObject(request);
         await PostRequestStream(payload, Endpoints.GENERATE, (Response.Generate response) => { onTextReceived?.Invoke(response.response); });
+        OnStreamFinished?.Invoke();
     }
 
 
@@ -38,5 +39,6 @@ public static partial class Ollama
         var request = new Request.Generate(model, prompt, true, new string[] { Convert.ToBase64String(image.EncodeToJPG()) });
         string payload = JsonConvert.SerializeObject(request);
         await PostRequestStream(payload, Endpoints.GENERATE, (Response.Generate response) => { onTextReceived?.Invoke(response.response); });
+        OnStreamFinished?.Invoke();
     }
 }

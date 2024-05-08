@@ -11,6 +11,12 @@ public class OllamaDemo : MonoBehaviour
     private Texture2D image;
 
     private bool isStream = false;
+    private bool isSafe = true;
+
+    void OnEnable()
+    {
+        Ollama.OnStreamFinished += () => isSafe = true;
+    }
 
     async void Start()
     {
@@ -35,7 +41,11 @@ public class OllamaDemo : MonoBehaviour
     {
         if (isStream)
         {
+            if (!isSafe)
+                return;
+
             display.text = string.Empty;
+            isSafe = false;
             await Ollama.GenerateStream(input, (string text) =>
             {
                 if (display != null)
@@ -55,7 +65,11 @@ public class OllamaDemo : MonoBehaviour
     {
         if (isStream)
         {
+            if (!isSafe)
+                return;
+
             display.text = string.Empty;
+            isSafe = false;
             await Ollama.GenerateWithImageStream("What is in this picture?", image, (string text) =>
             {
                 if (display != null)

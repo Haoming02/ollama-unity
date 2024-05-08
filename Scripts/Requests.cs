@@ -17,6 +17,8 @@ public static partial class Ollama
         public const string LIST = "api/tags";
     }
 
+    public static Action OnStreamFinished;
+
     private static async Task<T> PostRequest<T>(string payload, string endpoint) where T : Response.BaseResponse
     {
         HttpWebRequest httpWebRequest;
