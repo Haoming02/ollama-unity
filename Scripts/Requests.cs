@@ -15,11 +15,12 @@ public static partial class Ollama
         public const string GENERATE = "api/generate";
         public const string CHAT = "api/chat";
         public const string LIST = "api/tags";
+        public const string EMBEDDINGS = "api/embeddings";
     }
 
     public static Action OnStreamFinished;
 
-    private static async Task<T> PostRequest<T>(string payload, string endpoint) where T : Response.BaseResponse
+    private static async Task<T> PostRequest<T>(string payload, string endpoint)
     {
         HttpWebRequest httpWebRequest;
 

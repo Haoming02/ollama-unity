@@ -35,6 +35,18 @@ public static partial class Ollama
                 this.images = images;
             }
         }
+
+        public class Embeddings
+        {
+            public string model;
+            public string prompt;
+
+            public Embeddings(string model, string prompt)
+            {
+                this.model = model;
+                this.prompt = prompt;
+            }
+        }
     }
 
     private static class Response
@@ -84,6 +96,11 @@ public static partial class Ollama
                     public string quantization_level;
                 }
             }
+        }
+
+        public class Embeddings
+        {
+            public double[] embedding;
         }
     }
 
