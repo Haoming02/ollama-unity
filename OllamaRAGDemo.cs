@@ -6,13 +6,15 @@ public class OllamaRAGDemo : MonoBehaviour
     [SerializeField]
     private Text display;
     [SerializeField]
-    private TextAsset text;
+    private TextAsset[] data;
 
     private bool isStream = false;
 
-    void Start()
+    async void Start()
     {
-        Ollama.InitRAG(text);
+        Ollama.InitRAG();
+        foreach (var text in data)
+            await Ollama.AppendData(text);
     }
 
     /// <summary> Called by UnityEngine.UI.InputField </summary>

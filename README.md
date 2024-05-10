@@ -10,13 +10,17 @@ The user's system needs to have a working ollama setup already:
         ```bash
         ollama pull llama3
         ```
+    - For coding-related inquiries, also try out `stable-code`
+        ```bash
+        ollama pull stable-code
+        ```
     - Recommend `llava` for image captioning[*](#known-issue)
         ```bash
         ollama pull llava
         ```
-    - For coding-related inquiries, also try out `stable-code`
+    - Recommend `nomic-embed-text` for embeddings
         ```bash
-        ollama pull stable-code
+        ollama pull nomic-embed-text
         ```
 
 ## Features
@@ -62,11 +66,13 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
 ## R.A.G
 <p align="right"><sup><i>experimental</i></sup></p>
 
-> "Dumb" implementation; no preprocessing as of now
+> Not 100% Accurate...
 
 - **Ask()**
     - Ask a question based on the given context. Requires `InitRAG()` to be called first.
 - **InitRAG()**
+    - Initialize / Reset the context
+- **AppendData()**
     - Give the context *(**eg.** a document)* to perform RAG on
 
 <hr>
