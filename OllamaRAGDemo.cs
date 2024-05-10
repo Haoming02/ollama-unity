@@ -1,20 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class OllamaChatDemo : MonoBehaviour
+public class OllamaRAGDemo : MonoBehaviour
 {
     [SerializeField]
     private Text display;
     [SerializeField]
-    [Tooltip("Remember to:\n- Enable Read/Write\n- Disable Compression")]
-    private Texture2D image;
+    private TextAsset text;
 
     private bool isStream = false;
 
     void Start()
     {
-        Ollama.LoadChatHistory();
-        display.text = string.Empty;
+        Ollama.InitRAG(text);
     }
 
     /// <summary> Called by UnityEngine.UI.InputField </summary>
@@ -23,7 +21,7 @@ public class OllamaChatDemo : MonoBehaviour
         if (isStream)
         {
             display.text = string.Empty;
-            await Ollama.ChatStream(input, (string text) =>
+            await Ollama.AskStream(input, (string text) =>
             {
                 if (display != null)
                     display.text += text;
@@ -32,21 +30,9 @@ public class OllamaChatDemo : MonoBehaviour
         else
         {
             display.text = "processing...";
-            var response = await Ollama.Chat(input);
+            var response = await Ollama.Ask(input);
             display.text = response;
         }
-    }
-
-    /// <summary> Called by UnityEngine.UI.Button </summary>
-    public void SaveChat()
-    {
-        Ollama.SaveChatHistory();
-    }
-
-    /// <summary> Called by UnityEngine.UI.Button </summary>
-    public void ResetChat()
-    {
-        Ollama.InitChat();
     }
 
     public void ToggleStream(bool val)

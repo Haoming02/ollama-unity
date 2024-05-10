@@ -59,6 +59,16 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
 
 > **Note:** All model-related functions *(**eg.** `create`, `copy`, `pull`, etc.)* will **not** be implemented
 
+## R.A.G
+<p align="right"><sup><i>experimental</i></sup></p>
+
+> "Dumb" implementation; no preprocessing as of now
+
+- **Ask()**
+    - Ask a question based on the given context. Requires `InitRAG()` to be called first.
+- **InitRAG()**
+    - Give the context *(**eg.** a document)* to perform RAG on
+
 <hr>
 
 ## Known Issue
