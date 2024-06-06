@@ -14,7 +14,7 @@ The user's system needs to have a working ollama setup already:
         ```bash
         ollama pull stable-code
         ```
-    - Recommend `llava` for image captioning[*](#known-issue)
+    - Recommend `llava` for image captioning
         ```bash
         ollama pull llava
         ```
@@ -22,6 +22,10 @@ The user's system needs to have a working ollama setup already:
         ```bash
         ollama pull nomic-embed-text
         ```
+
+In Unity, you also need the **Newtonsoft.Json** package:
+
+- Unity Editor > **Window** > **Package Manager** > **`+`** > **Add package by name** > `com.unity.nuget.newtonsoft-json`
 
 ## Features
 All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async). Simply call the functions under the `Ollama` class. Two demo scripts showcasing how to use each function are included.
@@ -45,7 +49,7 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
         >> Tell me a joke
         "..."
         >> Explain the joke
-        "...
+        "..."
         ```
 - **ChatStream()**
     - Same as above
@@ -74,9 +78,3 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
     - Initialize / Reset the context
 - **AppendData()**
     - Give the context *(**eg.** a document)* to perform RAG on
-
-<hr>
-
-## Known Issue
-- You need `v0.1.34` or later of ollama for image models to work properly
-    > https://github.com/ollama/ollama/issues/4163
