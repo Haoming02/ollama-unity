@@ -1,33 +1,71 @@
 using Newtonsoft.Json;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 
 public static partial class Ollama
 {
+    public enum NormalizationMode
+    {
+        none,
+        zero_one,
+        one_one,
+        mean_std
+    }
+
     /// <summary> Generate an embeddings for a given prompt with a provided model </summary>
-    public static async Task<float[]> Embeddings(string prompt, string model = "nomic-embed-text")
+    public static async Task<double[]> Embeddings(string prompt, string model = "nomic-embed-text", NormalizationMode normalization = NormalizationMode.mean_std)
     {
         var request = new Request.Embeddings(model, prompt);
         string payload = JsonConvert.SerializeObject(request);
         var response = await PostRequest<Response.Embeddings>(payload, Endpoints.EMBEDDINGS);
-        return response.embedding;
+
+        return response.embedding.Normalized(normalization);
     }
 
-    public static float CosineSimilarity(float[] V1, float[] V2)
+    private static double[] Normalized(this double[] data, NormalizationMode mode)
     {
-        int N = math.min(V1.Length, V2.Length);
+        int len = data.Length;
+        double min, max, range;
 
-        float dot = 0.0f;
-        float mag1 = 0.0f;
-        float mag2 = 0.0f;
-
-        for (int n = 0; n < N; n++)
+        switch (mode)
         {
-            dot += V1[n] * V2[n];
-            mag1 += math.pow(V1[n], 2);
-            mag2 += math.pow(V2[n], 2);
-        }
+            case NormalizationMode.zero_one:
+                min = data.Min();
+                max = data.Max();
+                range = max - min;
 
-        return dot / (math.sqrt(mag1) * math.sqrt(mag2));
+                for (int i = 0; i < len; i++)
+                    data[i] = (data[i] - min) / range;
+
+                return data;
+
+            case NormalizationMode.one_one:
+                min = data.Min();
+                max = data.Max();
+                range = max - min;
+
+                for (int i = 0; i < len; i++)
+                    data[i] = ((data[i] - min) / range) * 2.0 - 1.0;
+
+                return data;
+
+            case NormalizationMode.mean_std:
+                double mean = data.Average();
+                double sumSquaredDifferences = 0.0;
+
+                foreach (double num in data)
+                    sumSquaredDifferences += math.pow(num - mean, 2);
+
+                double std = math.sqrt(sumSquaredDifferences / len);
+
+                for (int i = 0; i < len; i++)
+                    data[i] = (data[i] - mean) / std;
+
+                return data;
+
+            default:
+                return data;
+        }
     }
 }

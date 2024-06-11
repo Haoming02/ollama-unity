@@ -100,7 +100,7 @@ public static partial class Ollama
 
         public class Embeddings
         {
-            public float[] embedding;
+            public double[] embedding;
         }
     }
 

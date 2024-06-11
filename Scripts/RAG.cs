@@ -1,15 +1,53 @@
+using DBreeze;
+using DBreeze.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
+// ==================================== Reference ========================================= //
+// https://github.com/hhblaze/DBreeze/blob/master/TesterNet6/TextCorpus/ITGiantLogotypes.cs //
+// ======================================================================================== //
+
 public static partial class Ollama
 {
-    private static DB DATABASE;
+    private const string EMBEDDING = "vector";
+    private const string DOCUMENT = "string";
+
+    private static string DEFAULT_PATH => Path.Combine(Application.persistentDataPath, "RAG_DB");
+    private static DBreezeEngine DATABASE;
+
+    private static bool isInit = false;
 
     /// <summary> Initialize the database to perform RAG on </summary>
-    public static void InitRAG() => DATABASE = new DB();
+    public static void InitRAG(string filepath = null)
+    {
+        if (isInit)
+            return;
+
+        if (filepath == null)
+            filepath = DEFAULT_PATH;
+
+        DATABASE = new DBreezeEngine(filepath);
+        Application.quitting += () => { DATABASE.Dispose(); };
+
+        isInit = true;
+    }
+
+    /// <summary> Clear out all contexts in the database </summary>
+    public static void ClearContext()
+    {
+        if (!isInit)
+            return;
+
+        if (DATABASE.Scheme.IfUserTableExists(EMBEDDING))
+            DATABASE.Scheme.DeleteTable(EMBEDDING);
+        if (DATABASE.Scheme.IfUserTableExists(DOCUMENT))
+            DATABASE.Scheme.DeleteTable(DOCUMENT);
+    }
 
     private const int CONTEXT_LIMIT = 4096;
 
@@ -19,67 +57,75 @@ public static partial class Ollama
     /// <summary> Add context into the database </summary>
     public static async Task AppendData(string data)
     {
-        int l = data.Length;
-        if (l <= CONTEXT_LIMIT)
+        if (!isInit)
+            return;
+
+        int len = data.Length;
+        int chunk_count = Mathf.CeilToInt((float)len / CONTEXT_LIMIT);
+        int context_length = len / chunk_count;
+
+        for (int i = 0; i < chunk_count; i++)
         {
-            var vector = await Embeddings(data);
-            DATABASE.Vectors.Add(vector);
-            DATABASE.Contents.Add(data);
-            DATABASE.Count++;
-        }
-        else
-        {
-            int chunk_count = Mathf.CeilToInt((float)l / CONTEXT_LIMIT);
-            for (int i = 0; i < chunk_count; i++)
+            string chunk;
+
+            int from = (i == 0) ? 0 :
+                data.Substring((i - 1) * context_length, context_length).LastIndexOf('.') + (i - 1) * context_length + 1;
+
+            if (i == chunk_count - 1)
+                chunk = data.Substring(from);
+            else
             {
-                string chunk;
-
-                int from = (i == 0) ? 0 :
-                    data.Substring((i - 1) * CONTEXT_LIMIT, CONTEXT_LIMIT).LastIndexOf('.') + (i - 1) * CONTEXT_LIMIT + 1;
-
-                if (i < chunk_count - 1)
-                {
-                    int to = data.Substring((i + 1) * CONTEXT_LIMIT, Mathf.Min(CONTEXT_LIMIT, l - (i + 1) * CONTEXT_LIMIT)).IndexOf('.') + (i + 1) * CONTEXT_LIMIT + 1;
-                    chunk = data.Substring(from, to - from);
-                }
-                else
-                    chunk = data.Substring(from);
-
-                var vector = await Embeddings(chunk);
-                DATABASE.Vectors.Add(vector);
-                DATABASE.Contents.Add(chunk);
-                DATABASE.Count++;
+                int to = data.Substring((i + 1) * context_length, Mathf.Min(context_length, len - (i + 1) * context_length)).IndexOf('.') + (i + 1) * context_length + 1;
+                chunk = data.Substring(from, to - from);
             }
+
+            await appendData(chunk);
+        }
+    }
+
+    private static async Task appendData(string data)
+    {
+        using (var tran = DATABASE.GetTransaction())
+        {
+            tran.SynchronizeTables(EMBEDDING, DOCUMENT);
+
+            int count = tran.Select<byte[], int>(DOCUMENT, 1.ToIndex()).Value;
+            count++;
+
+            tran.Insert<byte[], string>(DOCUMENT, 2.ToIndex(count), data);
+
+            double[] embedding = await Embeddings(data);
+            Dictionary<byte[], double[]> vectors = new() {
+                {count.To_4_bytes_array_BigEndian(), embedding}
+            };
+
+            tran.VectorsInsert(EMBEDDING, vectors, false);
+
+            tran.Insert<byte[], int>(DOCUMENT, 1.ToIndex(), count);
+
+            tran.Commit();
         }
     }
 
     private static async Task<Message> Analyze(string prompt)
     {
-        if (DATABASE.Count == 0)
-            throw new NullReferenceException("Database is Empty...");
-
-        if (DATABASE.Count == 1)
-            return Context2Message(DATABASE.Contents[0]);
-
-        var vector = await Embeddings(prompt);
-
-        float best_match = -1.0f;
-        int index = -1;
-
-        for (int i = 0; i < DATABASE.Count; i++)
+        using (var tran = DATABASE.GetTransaction())
         {
-            float similarity = CosineSimilarity(vector, DATABASE.Vectors[i]);
-#if UNITY_EDITOR
-            Debug.Log($"[{similarity.ToString("0.00")}]: {DATABASE.Contents[i].Substring(0, DATABASE.Contents[i].IndexOf(".") + 1)}");
-#endif
-            if (similarity > best_match)
-            {
-                best_match = similarity;
-                index = i;
-            }
-        }
+            tran.ValuesLazyLoadingIsOn = false;
 
-        return Context2Message(DATABASE.Contents[index]);
+            if (tran.Count(DOCUMENT) == 0)
+                throw new NullReferenceException("Database is Empty...");
+
+            double[] embedding = await Embeddings(prompt);
+
+            var similar = tran.VectorsSearchSimilar(EMBEDDING, embedding, 1).First();
+
+            var result = tran.Select<byte[], string>(DOCUMENT, 2.ToIndex(similar)).Value;
+#if UNITY_EDITOR
+            Debug.Log(result);
+#endif
+            return Context2Message(result);
+        }
     }
 
     /// <summary> Ask a question for the given context using a provided model </summary>
@@ -116,59 +162,4 @@ public static partial class Ollama
             "Context: \n" + context
         );
     }
-
-    private class DB
-    {
-        public List<float[]> Vectors;
-        public List<string> Contents;
-        public int Count;
-
-        public DB()
-        {
-            Vectors = new List<float[]>();
-            Contents = new List<string>();
-            Count = 0;
-        }
-    }
-
-    //private static string[] SplitChunks(string input, int min_threshold = 1024, int max_threshold = 2048)
-    //{
-    //    if (input.Trim().Length < max_threshold)
-    //        return new string[] { input };
-
-    //    List<string> chunks = new List<string>();
-    //    StringBuilder stringBuilder = new StringBuilder();
-    //    int lenth = 0;
-
-    //    string[] temp = input.Split('\n');
-
-    //    foreach (var part in temp)
-    //    {
-    //        if (part.Trim().Length == 0)
-    //            continue;
-
-    //        if (lenth + part.Length > max_threshold)
-    //        {
-    //            chunks.Add(stringBuilder.ToString());
-    //            stringBuilder.Clear();
-
-    //            lenth = part.Length;
-    //            stringBuilder.AppendLine(part);
-    //        }
-    //        else
-    //        {
-    //            lenth += part.Length;
-    //            stringBuilder.AppendLine(part);
-
-    //            if (lenth > min_threshold)
-    //            {
-    //                chunks.Add(stringBuilder.ToString());
-    //                stringBuilder.Clear();
-    //                lenth = 0;
-    //            }
-    //        }
-    //    }
-
-    //    return chunks.ToArray();
-    //}
 }

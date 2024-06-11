@@ -70,7 +70,9 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
 ## R.A.G
 <p align="right"><sup><i>experimental</i></sup></p>
 
-> Not 100% Accurate...
+> Based on [DBreeze](https://github.com/hhblaze/DBreeze)
+
+> **W.I.P**
 
 - **Ask()**
     - Ask a question based on the given context. Requires `InitRAG()` to be called first.

@@ -13,6 +13,8 @@ public class OllamaRAGDemo : MonoBehaviour
     async void Start()
     {
         Ollama.InitRAG();
+        Ollama.ClearContext();
+
         foreach (var text in data)
             await Ollama.AppendData(text);
     }
