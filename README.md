@@ -72,7 +72,7 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
 
 > Based on [DBreeze](https://github.com/hhblaze/DBreeze)
 
-> **W.I.P**
+> Currently, only works with few context at a time *(**eg.** 2 files)*
 
 - **Ask()**
     - Ask a question based on the given context. Requires `InitRAG()` to be called first.

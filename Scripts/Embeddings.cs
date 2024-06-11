@@ -5,16 +5,10 @@ using Unity.Mathematics;
 
 public static partial class Ollama
 {
-    public enum NormalizationMode
-    {
-        none,
-        zero_one,
-        one_one,
-        mean_std
-    }
+    public enum NormalizationMode { none, zero_one, one_one, mean_std, magnitude }
 
     /// <summary> Generate an embeddings for a given prompt with a provided model </summary>
-    public static async Task<double[]> Embeddings(string prompt, string model = "nomic-embed-text", NormalizationMode normalization = NormalizationMode.mean_std)
+    public static async Task<double[]> Embeddings(string prompt, string model = "nomic-embed-text", NormalizationMode normalization = NormalizationMode.magnitude)
     {
         var request = new Request.Embeddings(model, prompt);
         string payload = JsonConvert.SerializeObject(request);
@@ -30,6 +24,19 @@ public static partial class Ollama
 
         switch (mode)
         {
+            case NormalizationMode.magnitude:
+                double magnitude = 0.0;
+
+                foreach (var d in data)
+                    magnitude += math.pow(d, 2);
+
+                magnitude = math.sqrt(magnitude);
+
+                for (int i = 0; i < len; i++)
+                    data[i] = data[i] / magnitude;
+
+                return data;
+
             case NormalizationMode.zero_one:
                 min = data.Min();
                 max = data.Max();

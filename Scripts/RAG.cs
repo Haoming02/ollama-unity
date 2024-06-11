@@ -83,25 +83,28 @@ public static partial class Ollama
         }
     }
 
+    private static byte[] KEY_DocumentCount() => 1.ToIndex();
+    private static byte[] KEY_DocumentID(int id) => 2.ToIndex(id);
+
     private static async Task appendData(string data)
     {
         using (var tran = DATABASE.GetTransaction())
         {
             tran.SynchronizeTables(EMBEDDING, DOCUMENT);
 
-            int count = tran.Select<byte[], int>(DOCUMENT, 1.ToIndex()).Value;
+            int count = tran.Select<byte[], int>(DOCUMENT, KEY_DocumentCount()).Value;
             count++;
 
-            tran.Insert<byte[], string>(DOCUMENT, 2.ToIndex(count), data);
+            tran.Insert<byte[], string>(DOCUMENT, KEY_DocumentID(count), data);
 
             double[] embedding = await Embeddings(data);
             Dictionary<byte[], double[]> vectors = new() {
-                {count.To_4_bytes_array_BigEndian(), embedding}
+                { KEY_DocumentID(count), embedding }
             };
 
             tran.VectorsInsert(EMBEDDING, vectors, false);
 
-            tran.Insert<byte[], int>(DOCUMENT, 1.ToIndex(), count);
+            tran.Insert<byte[], int>(DOCUMENT, KEY_DocumentCount(), count);
 
             tran.Commit();
         }
@@ -118,12 +121,18 @@ public static partial class Ollama
 
             double[] embedding = await Embeddings(prompt);
 
-            var similar = tran.VectorsSearchSimilar(EMBEDDING, embedding, 1).First();
-
-            var result = tran.Select<byte[], string>(DOCUMENT, 2.ToIndex(similar)).Value;
 #if UNITY_EDITOR
-            Debug.Log(result);
+            var similar = tran.VectorsSearchSimilar(EMBEDDING, embedding, -1).ToArray();
+
+            foreach (var vector in similar)
+                Debug.Log(tran.Select<byte[], string>(DOCUMENT, vector).Value);
+
+            var result = tran.Select<byte[], string>(DOCUMENT, similar.First()).Value;
+#else
+            var similar = tran.VectorsSearchSimilar(EMBEDDING, embedding, 1).First();
+            var result = tran.Select<byte[], string>(DOCUMENT, similar).Value;
 #endif
+
             return Context2Message(result);
         }
     }
