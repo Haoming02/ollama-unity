@@ -1,4 +1,6 @@
+using System;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,7 +57,7 @@ public class OllamaDemo : MonoBehaviour
         else
         {
             display.text = "processing...";
-            var response = await Ollama.Generate(input);
+            var response = await Task.Run(async () => await Ollama.Generate(input));
             display.text = response;
         }
     }
@@ -63,6 +65,8 @@ public class OllamaDemo : MonoBehaviour
     /// <summary> Called by UnityEngine.UI.Button </summary>
     public async void OnSendImage()
     {
+        string b64Image = Convert.ToBase64String(image.EncodeToJPG());
+
         if (isStream)
         {
             if (!isSafe)
@@ -70,7 +74,7 @@ public class OllamaDemo : MonoBehaviour
 
             display.text = string.Empty;
             isSafe = false;
-            await Ollama.GenerateWithImageStream("What is in this picture?", image, (string text) =>
+            await Ollama.GenerateWithImageStream("What is in this picture?", b64Image, (string text) =>
             {
                 if (display != null)
                     display.text += text;
@@ -79,7 +83,7 @@ public class OllamaDemo : MonoBehaviour
         else
         {
             display.text = "processing...";
-            var response = await Ollama.GenerateWithImage("What is in this picture?", image);
+            var response = await Task.Run(async () => await Ollama.GenerateWithImage("What is in this picture?", b64Image));
             display.text = response;
         }
     }

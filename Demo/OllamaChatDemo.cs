@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,13 @@ public class OllamaChatDemo : MonoBehaviour
 
     private bool isStream = false;
 
+    private bool isSafe = true;
+
+    void OnEnable()
+    {
+        Ollama.OnStreamFinished += () => isSafe = true;
+    }
+
     void Start()
     {
         Ollama.LoadChatHistory();
@@ -22,7 +30,11 @@ public class OllamaChatDemo : MonoBehaviour
     {
         if (isStream)
         {
+            if (!isSafe)
+                return;
+
             display.text = string.Empty;
+            isSafe = false;
             await Ollama.ChatStream(input, (string text) =>
             {
                 if (display != null)
@@ -32,7 +44,7 @@ public class OllamaChatDemo : MonoBehaviour
         else
         {
             display.text = "processing...";
-            var response = await Ollama.Chat(input);
+            var response = await Task.Run(async () => await Ollama.Chat(input));
             display.text = response;
         }
     }

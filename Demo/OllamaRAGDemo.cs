@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,13 @@ public class OllamaRAGDemo : MonoBehaviour
 
     private bool isStream = false;
 
+    private bool isSafe = true;
+
+    void OnEnable()
+    {
+        Ollama.OnStreamFinished += () => isSafe = true;
+    }
+
     async void Start()
     {
         await Ollama.InitRAG(pythonPath, (authToken.Trim().Length == 0) ? null : authToken);
@@ -30,7 +38,11 @@ public class OllamaRAGDemo : MonoBehaviour
     {
         if (isStream)
         {
+            if (!isSafe)
+                return;
+
             display.text = string.Empty;
+            isSafe = false;
             await Ollama.AskStream(input, (string text) =>
             {
                 if (display != null)
@@ -40,7 +52,7 @@ public class OllamaRAGDemo : MonoBehaviour
         else
         {
             display.text = "processing...";
-            var response = await Ollama.Ask(input);
+            var response = await Task.Run(async () => await Ollama.Ask(input));
             display.text = response;
         }
     }

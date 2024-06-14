@@ -103,12 +103,12 @@ public static partial class Ollama
 
 
     /// <summary> Generate a response for a given prompt and image using a provided model with history </summary>
-    public static async Task<string> ChatWithImage(string prompt, Texture2D image, string system = null, string model = "llava")
+    public static async Task<string> ChatWithImage(string prompt, string image, string system = null, string model = "llava")
     {
         if (system != null)
             ChatHistory.Enqueue(new Message("system", system));
 
-        ChatHistory.Enqueue(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
+        ChatHistory.Enqueue(new Message("user", prompt, new string[] { image }));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), false);
         string payload = JsonConvert.SerializeObject(request);
@@ -123,12 +123,12 @@ public static partial class Ollama
     }
 
     /// <summary> Stream a response for a given prompt and image using a provided model with history </summary>
-    public static async Task ChatWithImageStream(string prompt, Texture2D image, Action<string> onTextReceived, string system = null, string model = "llava")
+    public static async Task ChatWithImageStream(string prompt, string image, Action<string> onTextReceived, string system = null, string model = "llava")
     {
         if (system != null)
             ChatHistory.Enqueue(new Message("system", system));
 
-        ChatHistory.Enqueue(new Message("user", prompt, new string[] { Convert.ToBase64String(image.EncodeToJPG()) }));
+        ChatHistory.Enqueue(new Message("user", prompt, new string[] { image }));
 
         var request = new Request.Chat(model, ChatHistory.ToArray(), true);
         string payload = JsonConvert.SerializeObject(request);
