@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,13 +15,23 @@ public class OllamaRAGDemo : MonoBehaviour
     [SerializeField]
     private string authToken;
 
+    private Queue<string> buffer;
     private bool isStream = false;
-
     private bool isSafe = true;
 
     void OnEnable()
     {
         Ollama.OnStreamFinished += () => isSafe = true;
+        buffer = new Queue<string>();
+    }
+
+    void FixedUpdate()
+    {
+        if (isSafe)
+            return;
+
+        if (buffer.TryDequeue(out string text))
+            display.text += text;
     }
 
     async void Start()
@@ -41,13 +52,13 @@ public class OllamaRAGDemo : MonoBehaviour
             if (!isSafe)
                 return;
 
+            buffer.Clear();
             display.text = string.Empty;
             isSafe = false;
-            await Ollama.AskStream(input, (string text) =>
-            {
-                if (display != null)
-                    display.text += text;
-            });
+
+            await Task.Run(async () =>
+                await Ollama.AskStream(input, (string text) => buffer.Enqueue(text))
+            );
         }
         else
         {

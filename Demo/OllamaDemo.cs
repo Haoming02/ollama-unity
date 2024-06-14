@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -12,12 +13,23 @@ public class OllamaDemo : MonoBehaviour
     [Tooltip("Remember to:\n- Enable Read/Write\n- Disable Compression")]
     private Texture2D image;
 
+    private Queue<string> buffer;
     private bool isStream = false;
     private bool isSafe = true;
 
     void OnEnable()
     {
         Ollama.OnStreamFinished += () => isSafe = true;
+        buffer = new Queue<string>();
+    }
+
+    void FixedUpdate()
+    {
+        if (isSafe)
+            return;
+
+        if (buffer.TryDequeue(out string text))
+            display.text += text;
     }
 
     async void Start()
@@ -46,13 +58,13 @@ public class OllamaDemo : MonoBehaviour
             if (!isSafe)
                 return;
 
+            buffer.Clear();
             display.text = string.Empty;
             isSafe = false;
-            await Ollama.GenerateStream(input, (string text) =>
-            {
-                if (display != null)
-                    display.text += text;
-            });
+
+            await Task.Run(async () =>
+                await Ollama.GenerateStream(input, (string text) => buffer.Enqueue(text))
+            );
         }
         else
         {
@@ -72,13 +84,14 @@ public class OllamaDemo : MonoBehaviour
             if (!isSafe)
                 return;
 
+            buffer.Clear();
             display.text = string.Empty;
             isSafe = false;
-            await Ollama.GenerateWithImageStream("What is in this picture?", b64Image, (string text) =>
-            {
-                if (display != null)
-                    display.text += text;
-            });
+
+            await Task.Run(async () =>
+                await Ollama.GenerateWithImageStream("What is in this picture?",
+                    b64Image, (string text) => buffer.Enqueue(text)
+            ));
         }
         else
         {

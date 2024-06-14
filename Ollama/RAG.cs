@@ -85,7 +85,7 @@ public static partial class Ollama
     /// <summary> Stream a response for a question based on the given context using a provided model </summary>
     public static async Task AskStream(string prompt, Action<string> onTextReceived, string model = "llama3")
     {
-        var system = await Task.Run(async () => await Analyze(prompt));
+        var system = await Analyze(prompt);
         var request = new Request.Chat(model, new Message[] { system, new Message("user", $"Question:\n{prompt}") }, true);
         string payload = JsonConvert.SerializeObject(request);
 
