@@ -8,13 +8,21 @@ public class OllamaRAGDemo : MonoBehaviour
     [SerializeField]
     private TextAsset[] data;
 
+    [SerializeField]
+    private string pythonPath;
+    [SerializeField]
+    private string authToken;
+
     private bool isStream = false;
 
     async void Start()
     {
-        Ollama.InitRAG();
+        await Ollama.InitRAG(pythonPath, (authToken.Trim().Length == 0) ? null : authToken);
+
+        display.text = "initializing...";
         foreach (var text in data)
             await Ollama.AppendData(text);
+        display.text = "ready...";
     }
 
     /// <summary> Called by UnityEngine.UI.InputField </summary>

@@ -16,16 +16,16 @@ The user's system needs to have a working ollama setup already:
         ```
     - Recommend `llava` for image captioning
         ```bash
-        ollama pull llava
+        ollama pull llava:13b
         ```
-    - Recommend `nomic-embed-text` for embeddings
+    - Recommend `mxbai-embed-large` for embeddings
         ```bash
-        ollama pull nomic-embed-text
+        ollama pull mxbai-embed-large
         ```
 
 In Unity, you also need the **Newtonsoft.Json** package:
 
-- Unity Editor > **Window** > **Package Manager** > **`+`** > **Add package by name** > `com.unity.nuget.newtonsoft-json`
+- Unity Editor -> **Window** -> **Package Manager** -> **`+`** -> **Add package by name** -> `com.unity.nuget.newtonsoft-json`
 
 ## Features
 All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async). Simply call the functions under the `Ollama` class. Two demo scripts showcasing how to use each function are included.
@@ -67,14 +67,27 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
 
 > **Note:** All model-related functions *(**eg.** `create`, `copy`, `pull`, etc.)* will **not** be implemented
 
-## R.A.G
+## **R**etrieval **A**ugmented **G**eneration
 <p align="right"><sup><i>experimental</i></sup></p>
 
-> Not 100% Accurate...
+> Based on [ChromaDB](https://www.trychroma.com/)
 
 - **Ask()**
-    - Ask a question based on the given context. Requires `InitRAG()` to be called first.
+    - Ask a question based on the given context. Requires the following to be called first.
 - **InitRAG()**
-    - Initialize / Reset the context
+    - Start the ChromaDB server and initialize the database
+    - `pythonPath`: The path to the Python folder. See [Prerequisite](#prerequisite).
+    - `authToken`: ChromaDB allows you to set a password to prevent other users from accessing the database.
 - **AppendData()**
     - Give the context *(**eg.** a document)* to perform RAG on
+
+#### Prerequisite
+This repo comes with an **Editor** script that helps you install the necessary self-contained **Python** environment for running the ChromaDB.
+
+Simply go to the Editor, click **Ollama** in the toolbar, then click **Obtain Python**. Specify a path to store the environment, then click the 2 install buttons.
+
+Afterwards, when you call `InitRAG`, remember to pass in the path to the **python** folder.
+
+#### W.I.P
+- **AskChat()**
+    - Ask a question based on the given context as well as chat history
