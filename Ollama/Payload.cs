@@ -10,13 +10,15 @@ public static partial class Ollama
             public string prompt;
             public bool stream;
             public string[] images;
+            public string format;
 
-            public Generate(string model, string prompt, bool stream, string[] images = null)
+            public Generate(string model, string prompt, bool stream, string format = null, string[] images = null)
             {
                 this.model = model;
                 this.prompt = prompt;
                 this.stream = stream;
                 this.images = images;
+                this.format = format;
             }
         }
 

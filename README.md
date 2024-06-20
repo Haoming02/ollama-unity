@@ -39,9 +39,12 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
 - **GenerateStream()**
     - The stream variant that passes each word as soon as it's ready *(like ChatGPT)*. Requires a callback to handle the texts.
 - **GenerateWithImage()**
-    - Chat based on an image. Requires a multimodal model *(**eg.** `llava`)*. Supports `UnityEngine`'s `Texture2D` directly.
+    - Generate a response based on an image. Requires a multimodal model *(**eg.** `llava`)*. Supports `UnityEngine`'s `Texture2D` directly.
 - **GenerateWithImageStream()**
     - Same as above
+- **GenerateJson()**
+    - Give a `class` / `struct` format for the model to reply in
+    - **Important:** You need to manually tell the model to reply in JSON format in the prompt as well
 - **Chat()**
     - Same as `Generate()`, but with the memory of prior chat history, thus allowing you to further ask about previous conversations. Requires either `InitChat()` or `LoadChatHistory()` to be called first.
     - **Example:**
