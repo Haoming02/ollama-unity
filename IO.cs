@@ -4,8 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 
 /// <summary>
-/// A dumb way to not save in plain text.
-/// You should probably replace these if you're serious about security...
+/// A dumb way to not save in plain text <br/>
+/// You should probably replace these if security is critical...
 /// </summary>
 public static class IO
 {

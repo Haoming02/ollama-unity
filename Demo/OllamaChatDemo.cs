@@ -6,20 +6,17 @@ using UnityEngine.UI;
 public class OllamaChatDemo : MonoBehaviour
 {
     [SerializeField]
-    private Text display;
-    [SerializeField]
-    [Tooltip("Remember to:\n- Enable Read/Write\n- Disable Compression")]
-    private Texture2D image;
+    private string demoModel = "gemma2:2b";
 
-    private Queue<string> buffer;
-    private bool isStream = false;
+    [SerializeField]
+    private Text display;
+
+    private Queue<string> buffer = new Queue<string>();
     private bool isSafe = true;
 
-    void OnEnable()
-    {
-        Ollama.OnStreamFinished += () => isSafe = true;
-        buffer = new Queue<string>();
-    }
+    private void StreamFinished() { isSafe = true; }
+    void OnEnable() { Ollama.OnStreamFinished += StreamFinished; }
+    void OnDisable() { Ollama.OnStreamFinished -= StreamFinished; }
 
     void FixedUpdate()
     {
@@ -32,48 +29,24 @@ public class OllamaChatDemo : MonoBehaviour
 
     void Start()
     {
-        Ollama.LoadChatHistory();
+        Ollama.InitChat();
         display.text = string.Empty;
     }
 
-    /// <summary> Called by UnityEngine.UI.InputField </summary>
-    public async void OnSend(string input)
+    /// <summary>Called by <b>UnityEngine.UI.InputField</b></summary>
+    public async void OnSubmit(string input)
     {
-        if (isStream)
-        {
-            if (!isSafe)
-                return;
+        if (!isSafe)
+            return;
 
-            buffer.Clear();
-            display.text = string.Empty;
-            isSafe = false;
+        buffer.Clear();
+        display.text += $"[User]\n{input}\n\n[LLM]\n";
+        isSafe = false;
 
-            await Task.Run(async () =>
-                await Ollama.ChatStream(input, (string text) => buffer.Enqueue(text))
-            );
-        }
-        else
-        {
-            display.text = "processing...";
-            var response = await Task.Run(async () => await Ollama.Chat(input));
-            display.text = response;
-        }
-    }
+        await Task.Run(async () =>
+            await Ollama.ChatStream((string text) => buffer.Enqueue(text), demoModel, input)
+        );
 
-    /// <summary> Called by UnityEngine.UI.Button </summary>
-    public void SaveChat()
-    {
-        Ollama.SaveChatHistory();
-    }
-
-    /// <summary> Called by UnityEngine.UI.Button </summary>
-    public void ResetChat()
-    {
-        Ollama.InitChat();
-    }
-
-    public void ToggleStream(bool val)
-    {
-        isStream = val;
+        display.text += "\n\n";
     }
 }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,70 +5,35 @@ using UnityEngine.UI;
 public class OllamaRAGDemo : MonoBehaviour
 {
     [SerializeField]
+    private string demoModel = "llama3.1";
+
+    [SerializeField]
     private Text display;
     [SerializeField]
-    private TextAsset[] data;
+    private InputField field;
 
     [SerializeField]
-    private string pythonPath;
-    [SerializeField]
-    private string authToken;
-
-    private Queue<string> buffer;
-    private bool isStream = false;
-    private bool isSafe = true;
-
-    void OnEnable()
-    {
-        Ollama.OnStreamFinished += () => isSafe = true;
-        buffer = new Queue<string>();
-    }
-
-    void FixedUpdate()
-    {
-        if (isSafe)
-            return;
-
-        if (buffer.TryDequeue(out string text))
-            display.text += text;
-    }
+    private TextAsset[] context;
 
     async void Start()
     {
-        await Ollama.InitRAG(pythonPath, (authToken.Trim().Length == 0) ? null : authToken);
+        field.interactable = false;
+        Ollama.InitRAG(demoModel);
 
-        display.text = "initializing...";
-        foreach (var text in data)
-            await Ollama.AppendData(text);
-        display.text = "ready...";
+        foreach (var asset in context)
+            await Ollama.AppendData(asset.text);
+
+        display.text = "ready";
+        field.interactable = true;
+
+        // Ollama.DebugContext();
     }
 
-    /// <summary> Called by UnityEngine.UI.InputField </summary>
-    public async void OnSend(string input)
+    /// <summary>Called by <b>UnityEngine.UI.InputField</b></summary>
+    public async void OnSubmit(string input)
     {
-        if (isStream)
-        {
-            if (!isSafe)
-                return;
-
-            buffer.Clear();
-            display.text = string.Empty;
-            isSafe = false;
-
-            await Task.Run(async () =>
-                await Ollama.AskStream(input, (string text) => buffer.Enqueue(text))
-            );
-        }
-        else
-        {
-            display.text = "processing...";
-            var response = await Task.Run(async () => await Ollama.Ask(input));
-            display.text = response;
-        }
-    }
-
-    public void ToggleStream(bool val)
-    {
-        isStream = val;
+        display.text = "processing...";
+        var response = await Task.Run(async () => await Ollama.Ask(demoModel, input));
+        display.text = response;
     }
 }

@@ -1,52 +1,73 @@
-﻿# Ollama for Unity
-A series of functions wrapping the [ollama APIs](https://github.com/ollama/ollama/blob/main/docs/api.md), mainly for use in Unity
+﻿<h1 align="center">
+<img src="https://avatars.githubusercontent.com/u/151674099" width=64 height=64>
+<sup>for</sup>
+<img src="https://avatars.githubusercontent.com/u/426196" width=64 height=64>
+</h1>
+
+<p align="center">
+A series of C# functions wrapping the <a href="https://github.com/ollama/ollama/blob/main/docs/api.md">ollama APIs</a>, mainly for UnityEngine
+</p>
 
 ## Prerequisite
-The user's system needs to have a working ollama setup already:
+The **user**'s system needs to have a working ollama setup already:
 
-1. Download and Install [**ollama**](https://ollama.com/)
-2. Pull a model of choice from the [model library](https://ollama.com/library)
-    - Recommend `llama3` for general text conversation
+1. Download and Install [ollama](https://ollama.com/)
+2. Pull a model of choice from the [Library](https://ollama.com/library)
+    - Recommend `llama3.1` for general conversation
         ```bash
-        ollama pull llama3
+        ollama pull llama3.1
         ```
-    - For coding-related inquiries, also try out `stable-code`
+    - Recommend `gemma2:2b` for device with limited memory
         ```bash
-        ollama pull stable-code
+        ollama pull gemma2:2b
         ```
     - Recommend `llava` for image captioning
         ```bash
-        ollama pull llava:13b
-        ```
-    - Recommend `mxbai-embed-large` for embeddings
-        ```bash
-        ollama pull mxbai-embed-large
+        ollama pull llava
         ```
 
-In Unity, you also need the **Newtonsoft.Json** package:
+In **Unity**, you need the `Newtonsoft.Json` package:
 
-- Unity Editor -> **Window** -> **Package Manager** -> **`+`** -> **Add package by name** -> `com.unity.nuget.newtonsoft-json`
+1. Unity Editor
+2. Window
+3. Package Manager
+4. Add package by name
+5. Name:
+    ```
+    com.unity.nuget.newtonsoft-json
+    ```
+6. Add
 
 ## Features
-All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async). Simply call the functions under the `Ollama` class. Two demo scripts showcasing how to use each function are included.
+The following functions are avaliable under the **Ollama** class
+
+> All functions are [asynchronous](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async)
 
 - **List()**
-    - Return an array of all available models that you can pass to other functions below
-- **ListCategorized()**
-    - Return two arrays, regular text models *(**eg.** `llama3`)* and multimodal models that can handle image inputs *(**eg.** `llava`)*, separately instead
+    - Return an array of `Model`, representing all locally available models
+    - The `Model` class follows the official [specs](https://github.com/ollama/ollama/blob/main/docs/api.md#list-local-models)
+
+> [!TIP]
+> You can use the `families` attribute to determine if a model is multimodal (see **[\#2608](https://github.com/ollama/ollama/issues/2608)**)
+
+#### Generate
+
 - **Generate()**
-    - The most basic function that returns the response when given a prompt
+    - The most basic function that returns a response when given a model and a prompt
 - **GenerateStream()**
-    - The stream variant that passes each word as soon as it's ready *(like ChatGPT)*. Requires a callback to handle the texts.
-- **GenerateWithImage()**
-    - Generate a response based on an image. Requires a multimodal model *(**eg.** `llava`)*. Supports `UnityEngine`'s `Texture2D` directly.
-- **GenerateWithImageStream()**
-    - Same as above
+    - The streaming variant that returns each word as soon as it's ready
+    - Requires a `callback` to handle the chunks
 - **GenerateJson()**
-    - Give a `class` / `struct` format for the model to reply in
-    - **Important:** You need to manually tell the model to reply in JSON format in the prompt as well
+    - Return the response in the specified `class` / `struct` format
+
+> [!IMPORTANT]
+> You need to manually tell the model to use a JSON format in the prompt
+
+#### Chat
+
 - **Chat()**
-    - Same as `Generate()`, but with the memory of prior chat history, thus allowing you to further ask about previous conversations. Requires either `InitChat()` or `LoadChatHistory()` to be called first.
+    - Same as `Generate()`, but now with the memory of prior chat history, thus allowing you to further ask about previous conversations
+    - Requires either `InitChat()` or `LoadChatHistory()` to be called first
     - **Example:**
         ```
         >> Tell me a joke
@@ -56,41 +77,50 @@ All functions below are [asynchronous](https://learn.microsoft.com/en-us/dotnet/
         ```
 - **ChatStream()**
     - Same as above
-- **ChatWithImage()**
-    - Same as above
-- **ChatWithImageStream()**
-    - Same as above
 - **InitChat()**
     - Initialize / Reset the chat history
-    - `historyLimit`: The number of messages to keep in memory *(defaults to `16`)*
+    - `historyLimit`: The number of messages to keep in memory
 - **SaveChatHistory()**
-    - Save the current chat history to the specified path *(defaults to `Application.persistentDataPath`)*
+    - Save the current chat history to the specified path
 - **LoadChatHistory()**
-    - Load the chat history from the specified path *(defaults to `Application.persistentDataPath`)*. Will simply initialize if the file does not exist.
+    - Load the chat history from the specified path
+    - Calls `InitChat()` automatically instead if the file does not exist
 
-> **Note:** All model-related functions *(**eg.** `create`, `copy`, `pull`, etc.)* will **not** be implemented
+#### RAG
 
-## **R**etrieval **A**ugmented **G**eneration
-<p align="right"><sup><i>experimental</i></sup></p>
-
-> Based on [ChromaDB](https://www.trychroma.com/)
+> **R**etrieval **A**ugmented **G**eneration
 
 - **Ask()**
-    - Ask a question based on the given context. Requires the following to be called first.
+    - Ask a question based on given context
+    - Requires both `InitRAG()` and `AppendData()` to be called first
 - **InitRAG()**
-    - Start the ChromaDB server and initialize the database
-    - `pythonPath`: The path to the Python folder. See [Prerequisite](#prerequisite).
-    - `authToken`: ChromaDB allows you to set a password to prevent other users from accessing the database.
+    - Initialize the database
+    - Requires a model to generate embeddings
+        - Can use a different model from the one used in `Ask()`
+        - Can use a regular LLM or a dedicated embedding model, such as `nomic-embed-text`
 - **AppendData()**
-    - Give the context *(**eg.** a document)* to perform RAG on
+    - Add a context *(**eg.** a document)* to retrieve from
 
-#### Prerequisite
-This repo comes with an **Editor** script that helps you install the necessary self-contained **Python** environment for running the ChromaDB.
+> [!NOTE]
+> How well the RAG performs is dependent on several factors...
 
-Simply go to the Editor, click **Ollama** in the toolbar, then click **Obtain Python**. Specify a path to store the environment, then click the 2 install buttons.
+## Demo
+A demo scene containing 3 demo scripts showcasing various features is included:
 
-Afterwards, when you call `InitRAG`, remember to pass in the path to the **python** folder.
+- **Generate Demo**
+    - `List()`
+    - `Generate()`
+    - `GenerateJson()`
+    - `KeepAlive.unload_immediately`
 
-#### W.I.P
-- **AskChat()**
-    - Ask a question based on the given context as well as chat history
+- **Chat Demo**
+    - `InitChat()`
+    - `ChatStream()`
+
+- **RAG Demo**
+    - `InitRAG()`
+    - `AppendData()`
+    - `Ask()`
+
+> [!NOTE]
+> Recommended to not enable multiple demos at the same time...

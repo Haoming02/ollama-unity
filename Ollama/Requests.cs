@@ -8,6 +8,9 @@ using UnityEngine;
 
 public static partial class Ollama
 {
+    /// <summary>Subscribe to this Event to know when a Streaming response is finished</summary>
+    public static Action OnStreamFinished;
+
     private const string SERVER = "http://localhost:11434/";
 
     private static class Endpoints
@@ -15,10 +18,8 @@ public static partial class Ollama
         public const string GENERATE = "api/generate";
         public const string CHAT = "api/chat";
         public const string LIST = "api/tags";
-        public const string EMBEDDINGS = "api/embeddings";
+        public const string EMBEDDINGS = "api/embed";
     }
-
-    public static Action OnStreamFinished;
 
     private static async Task<T> PostRequest<T>(string payload, string endpoint)
     {
@@ -30,7 +31,7 @@ public static partial class Ollama
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
 
-            using var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream());
+            using var streamWriter = new StreamWriter(await httpWebRequest.GetRequestStreamAsync());
             streamWriter.Write(payload);
         }
         catch (Exception e)
@@ -40,10 +41,9 @@ public static partial class Ollama
         }
 
         var httpResponse = await httpWebRequest.GetResponseAsync();
-
         using var streamReader = new StreamReader(httpResponse.GetResponseStream());
 
-        string result = streamReader.ReadToEnd();
+        string result = await streamReader.ReadToEndAsync();
         return JsonConvert.DeserializeObject<T>(result);
     }
 
@@ -57,7 +57,7 @@ public static partial class Ollama
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
 
-            using var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream());
+            using var streamWriter = new StreamWriter(await httpWebRequest.GetRequestStreamAsync());
             streamWriter.Write(payload);
         }
         catch (Exception e)
@@ -76,10 +76,8 @@ public static partial class Ollama
         {
             string result = await reader.ReadLineAsync();
             var response = JsonConvert.DeserializeObject<T>(result);
+            onChunkReceived?.Invoke(response);
             isEnd = response.done;
-
-            if (!isEnd)
-                onChunkReceived?.Invoke(response);
         }
     }
 
@@ -100,10 +98,9 @@ public static partial class Ollama
         }
 
         var httpResponse = await httpWebRequest.GetResponseAsync();
-
         using var streamReader = new StreamReader(httpResponse.GetResponseStream());
 
-        string result = streamReader.ReadToEnd();
+        string result = await streamReader.ReadToEndAsync();
         return JsonConvert.DeserializeObject<T>(result);
     }
 }
