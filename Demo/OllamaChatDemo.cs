@@ -12,9 +12,11 @@ public class OllamaChatDemo : MonoBehaviour
     private Text display;
 
     private Queue<string> buffer = new Queue<string>();
-    private bool isSafe = true;
 
-    private void StreamFinished() { isSafe = true; }
+    private bool isSafe = true;
+    private bool isFinished = false;
+
+    private void StreamFinished() { isFinished = true; }
     void OnEnable() { Ollama.OnStreamFinished += StreamFinished; }
     void OnDisable() { Ollama.OnStreamFinished -= StreamFinished; }
 
@@ -25,6 +27,12 @@ public class OllamaChatDemo : MonoBehaviour
 
         if (buffer.TryDequeue(out string text))
             display.text += text;
+
+        if (isFinished && buffer.Count == 0)
+        {
+            isSafe = true;
+            display.text += "\n\n";
+        }
     }
 
     void Start()
@@ -39,14 +47,12 @@ public class OllamaChatDemo : MonoBehaviour
         if (!isSafe)
             return;
 
-        buffer.Clear();
         display.text += $"[User]\n{input}\n\n[LLM]\n";
         isSafe = false;
+        isFinished = false;
 
         await Task.Run(async () =>
             await Ollama.ChatStream((string text) => buffer.Enqueue(text), demoModel, input)
         );
-
-        display.text += "\n\n";
     }
 }
