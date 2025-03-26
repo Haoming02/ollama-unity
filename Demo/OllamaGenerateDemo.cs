@@ -44,7 +44,7 @@ public class OllamaGenerateDemo : MonoBehaviour
     /// </summary>
     public async void Unload()
     {
-        await Ollama.Generate(demoModel, "", null, Ollama.KeepAlive.unload_immediately);
+        await Ollama.Generate(demoModel, "", Ollama.UnloadImmediately);
     }
 
     private struct MathResult

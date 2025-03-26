@@ -6,11 +6,6 @@ namespace ollama
 {
     public static partial class Ollama
     {
-        /// <summary>Subscribe to this Event to know when a Streaming response is finished</summary>
-        public static Action OnStreamFinished;
-
-        private const int MaxIterations = 65536;
-
         private static class Request
         {
             public abstract class Base
