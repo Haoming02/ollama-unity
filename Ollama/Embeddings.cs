@@ -6,37 +6,20 @@ namespace ollama
 {
     public static partial class Ollama
     {
-        /// <summary>
-        /// Generate embeddings from a string using given model <br/>
-        /// <b>Note:</b> Not all models can generate embeddings
-        /// </summary>
-        /// <param name="model">Ollama Model Syntax (<b>eg.</b> llama3.1)</param>
-        /// <param name="input">prompt</param>
+        /// <summary>Generate embeddings from a string using given model</summary>
+        /// <param name="model">Ollama Model Syntax (<b>eg.</b> gemma3:4b)</param>
+        /// <param name="keep_alive">The duration <i>(in seconds)</i> to keep the model in memory</param>
         /// <returns>embeddings</returns>
-        public static async Task<float[]> Embeddings(string model, string input, KeepAlive keep_alive = KeepAlive.five_minute)
+        public static async Task<float[]> Embeddings(string model, string prompt, int keep_alive = 300)
         {
-            var request = new Request.Embeddings(model, input, keep_alive);
+            var request = new Request.Embeddings(model, prompt, keep_alive);
             string payload = JsonConvert.SerializeObject(request);
             var response = await PostRequest<Response.Embeddings>(payload, Endpoints.EMBEDDINGS);
             return response.embeddings[0];
         }
 
-        /// <summary>
-        /// Generate embeddings from a string using given model <br/>
-        /// <b>Note:</b> Not all models can generate embeddings
-        /// </summary>
-        /// <param name="model">Ollama Model Syntax (<b>eg.</b> llama3.1)</param>
-        /// <param name="input">array of prompts</param>
-        /// <returns>array of embeddings</returns>
-        public static async Task<float[][]> Embeddings(string model, string[] input, KeepAlive keep_alive = KeepAlive.five_minute)
-        {
-            var request = new Request.Embeddings(model, input, keep_alive);
-            string payload = JsonConvert.SerializeObject(request);
-            var response = await PostRequest<Response.Embeddings>(payload, Endpoints.EMBEDDINGS);
-            return response.embeddings;
-        }
-
-        public static float CosineSimilarity(float[] V1, float[] V2)
+        /// <summary>Replace this with better algorithm for improved accuracy...</summary>
+        private static float CosineSimilarity(float[] V1, float[] V2)
         {
             int N = V1.Length;
 
