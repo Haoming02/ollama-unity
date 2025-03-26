@@ -5,7 +5,7 @@ using System.Text;
 
 /// <summary>
 /// A dumb way to not save in plain text <br/>
-/// You should probably replace these if security is critical...
+/// You should replace these if security is critical...
 /// </summary>
 public static class IO
 {
@@ -29,7 +29,7 @@ public static class IO
 
     public static string Hash(string input)
     {
-        using MD5 md5 = MD5.Create();
-        return string.Concat(md5.ComputeHash(Encoding.UTF8.GetBytes(input)).Select(x => x.ToString("X2")));
+        using (var md5 = MD5.Create())
+            return string.Concat(md5.ComputeHash(Encoding.UTF8.GetBytes(input)).Select(x => x.ToString("X2")));
     }
 }
