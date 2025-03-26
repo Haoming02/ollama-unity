@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ollama
@@ -38,10 +39,10 @@ namespace ollama
 
             public class Chat : Base
             {
-                public Message[] messages;
+                public List<Message> messages;
                 public bool stream;
 
-                public Chat(string model, Message[] messages, bool stream, int keep_alive)
+                public Chat(string model, List<Message> messages, bool stream, int keep_alive)
                 {
                     this.model = model;
                     this.messages = messages;
