@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using ollama;
 
 public class OllamaChatDemo : MonoBehaviour
 {
