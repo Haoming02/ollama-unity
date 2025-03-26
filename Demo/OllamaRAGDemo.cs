@@ -16,6 +16,8 @@ public class OllamaRAGDemo : MonoBehaviour
     [SerializeField]
     private TextAsset[] context;
 
+    void Awake() { Ollama.Launch(); }
+
     async void Start()
     {
         field.interactable = false;

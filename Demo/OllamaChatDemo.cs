@@ -36,6 +36,8 @@ public class OllamaChatDemo : MonoBehaviour
         }
     }
 
+    void Awake() { Ollama.Launch(); }
+
     void Start()
     {
         Ollama.InitChat();

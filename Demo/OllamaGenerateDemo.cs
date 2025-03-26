@@ -11,6 +11,8 @@ public class OllamaGenerateDemo : MonoBehaviour
     [SerializeField]
     private Text display;
 
+    void Awake() { Ollama.Launch(); }
+
     async void Start()
     {
         var models = await Ollama.List();

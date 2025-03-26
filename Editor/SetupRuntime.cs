@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using UnityEditor;
 
 namespace ollama
@@ -6,17 +5,9 @@ namespace ollama
     public static class SetupRuntime
     {
         [MenuItem("Ollama/Launch Ollama")]
-        public static void StartOllama()
+        public static void LaunchOllama()
         {
-            var ollama = new Process();
-            ollama.StartInfo.FileName = "ollama";
-            ollama.StartInfo.Arguments = "list";
-            ollama.StartInfo.CreateNoWindow = false;
-            ollama.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            ollama.Start();
-            ollama.WaitForExit();
-            ollama.Close();
-
+            Ollama.Launch();
             UnityEngine.Debug.Log("ollama launched~");
         }
     }
