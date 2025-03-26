@@ -5,64 +5,67 @@ namespace ollama
 {
     public static partial class Ollama
     {
-        public enum KeepAlive { unload_immediately = 0, five_minute = 300, loaded_forever = -1 };
+        /// <summary>Subscribe to this Event to know when a Streaming response is finished</summary>
+        public static Action OnStreamFinished;
+
+        private const int MaxIterations = 65536;
 
         private static class Request
         {
-            public class Generate
+            public abstract class Base
             {
                 public string model;
-                public string prompt;
-                public string[] images;
-                public string format;
-                public bool stream;
                 public int keep_alive;
+            }
 
-                public Generate(string model, string prompt, string[] images, string format, bool stream, KeepAlive keep_alive)
+            public class Generate : Base
+            {
+                public string prompt;
+                public bool stream;
+                public string format;
+                public string[] images;
+
+                public Generate(string model, string prompt, bool stream, int keep_alive, string format = null, string[] images = null)
                 {
                     this.model = model;
                     this.prompt = prompt;
-                    this.images = images;
-                    this.format = format;
                     this.stream = stream;
-                    this.keep_alive = (int)keep_alive;
+                    this.keep_alive = keep_alive;
+                    this.format = format;
+                    this.images = images;
                 }
             }
 
-            public class Chat
+            public class Chat : Base
             {
-                public string model;
                 public Message[] messages;
                 public bool stream;
-                public int keep_alive;
 
-                public Chat(string model, Message[] messages, bool stream, KeepAlive keep_alive)
+                public Chat(string model, Message[] messages, bool stream, int keep_alive)
                 {
                     this.model = model;
                     this.messages = messages;
                     this.stream = stream;
-                    this.keep_alive = (int)keep_alive;
+                    this.keep_alive = keep_alive;
                 }
             }
 
-            public class Embeddings
+            public class Embeddings : Base
             {
-                public string model;
                 public string[] input;
-                public int keep_alive;
 
-                public Embeddings(string model, string input, KeepAlive keep_alive)
+                public Embeddings(string model, string input, int keep_alive)
                 {
                     this.model = model;
                     this.input = new string[] { input };
-                    this.keep_alive = (int)keep_alive;
+                    this.keep_alive = keep_alive;
                 }
 
-                public Embeddings(string model, string[] input, KeepAlive keep_alive)
+                public Embeddings(string model, string[] input, int keep_alive)
                 {
                     this.model = model;
                     this.input = input;
-                    this.keep_alive = (int)keep_alive;
+                    this.keep_alive = keep_alive;
                 }
             }
         }
@@ -86,6 +89,7 @@ namespace ollama
                 public string model;
                 public DateTime created_at;
                 public bool done;
+#if OLLAMA_ADVANCED
                 public int[] context;
                 public long total_duration;
                 public long load_duration;
@@ -93,6 +97,7 @@ namespace ollama
                 public long prompt_eval_duration;
                 public int eval_count;
                 public long eval_duration;
+#endif
             }
 
             public class List : Base
@@ -102,8 +107,13 @@ namespace ollama
 
             public class Embeddings : Base
             {
-                public string model;
                 public float[][] embeddings;
+#if OLLAMA_ADVANCED
+                public string model;
+                public long total_duration;
+                public long load_duration;
+                public int prompt_eval_count;
+#endif
             }
         }
 
@@ -135,17 +145,9 @@ namespace ollama
             {
                 this.role = role;
                 this.content = content;
-                if (image == null)
-                    this.images = null;
-                else
-                    this.images = new string[] { image };
+                this.images = (image == null) ? null : new string[] { image };
             }
         }
-
-        /// <summary>Subscribe to this Event to know when a Streaming response is finished</summary>
-        public static Action OnStreamFinished;
-
-        private const int MaxIterations = 65536;
 
         public static string[] EncodeTextures(Texture2D[] textures, bool fullQuality = false)
         {
@@ -154,21 +156,17 @@ namespace ollama
 
             int l = textures.Length;
             string[] imagesBase64 = new string[l];
+
             for (int i = 0; i < l; i++)
-                imagesBase64[i] = Texture2Base64(textures[i]);
+                imagesBase64[i] = Texture2Base64(textures[i], fullQuality);
 
             return imagesBase64;
         }
 
         private static string Texture2Base64(Texture2D texture, bool fullQuality = false)
         {
-            if (texture == null)
-                return null;
-
-            if (fullQuality)
-                return Convert.ToBase64String(texture.EncodeToPNG());
-            else
-                return Convert.ToBase64String(texture.EncodeToJPG());
+            if (texture == null) return null;
+            return Convert.ToBase64String(fullQuality ? texture.EncodeToPNG() : texture.EncodeToJPG());
         }
     }
 }
