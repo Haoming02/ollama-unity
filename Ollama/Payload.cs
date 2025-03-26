@@ -69,6 +69,8 @@ namespace ollama
 
         private static class Response
         {
+            public abstract class Base { };
+
             public class Generate : BaseResponse
             {
                 public string response;
@@ -79,7 +81,7 @@ namespace ollama
                 public Message message;
             }
 
-            public abstract class BaseResponse
+            public abstract class BaseResponse : Base
             {
                 public string model;
                 public DateTime created_at;
@@ -93,12 +95,12 @@ namespace ollama
                 public long eval_duration;
             }
 
-            public class List
+            public class List : Base
             {
                 public Model[] models;
             }
 
-            public class Embeddings
+            public class Embeddings : Base
             {
                 public string model;
                 public float[][] embeddings;
@@ -139,6 +141,11 @@ namespace ollama
                     this.images = new string[] { image };
             }
         }
+
+        /// <summary>Subscribe to this Event to know when a Streaming response is finished</summary>
+        public static Action OnStreamFinished;
+
+        private const int MaxIterations = 65536;
 
         public static string[] EncodeTextures(Texture2D[] textures, bool fullQuality = false)
         {
