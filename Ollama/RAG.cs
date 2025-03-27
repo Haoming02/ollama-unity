@@ -28,7 +28,10 @@ namespace ollama
         }
 
         /// <summary>Initialize the database to store the vectors</summary>
-        /// <param name="model">Ollama Model Syntax (<b>eg.</b> nomic-embed-text)</param>
+        /// <param name="model">
+        /// Ollama Model Syntax (<b>eg.</b> nomic-embed-text) <br/>
+        /// <b>Important:</b> Not all models can generate embeddings
+        /// </param>
         /// <param name="keep_alive">The duration <i>(in seconds)</i> to keep the model in memory</param>
         public static void InitRAG(string model, int keep_alive = 300)
         {
@@ -164,7 +167,7 @@ namespace ollama
         {
             return new Message("system",
                 "You are an assistant for question-answering tasks. Use only the following piece of context to answer the question. " +
-                "If no answer can be found within the context, simply say so. Do **NOT** answer outside of context. \n" +
+                "If no answer can be found within the context, simply say so. Do **NOT** answer outside of context. (Do not mention what the context is about either)\n" +
                 $"Context:\n\"\"\"\n{context}\n\"\"\""
             );
         }
