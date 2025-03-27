@@ -1,29 +1,33 @@
 ﻿<h1 align="center">
-<img src="https://avatars.githubusercontent.com/u/151674099" width=64 height=64>
-<sup>for</sup>
-<img src="https://avatars.githubusercontent.com/u/426196" width=64 height=64>
+<sub><img src="https://avatars.githubusercontent.com/u/151674099" width=64 height=64></sub>
+<sup> for </sup>
+<sub><img src="https://avatars.githubusercontent.com/u/426196" width=64 height=64></sub>
 </h1>
 
 <p align="center">
-A series of C# functions wrapping the <a href="https://github.com/ollama/ollama/blob/main/docs/api.md">ollama APIs</a>, mainly for UnityEngine
+A series of C# functions wrapping the <a href="https://github.com/ollama/ollama/blob/main/docs/api.md">ollama APIs</a>, mainly for the <a href="https://unity.com/">UnityEngine</a>
 </p>
 
 ## Prerequisite
-The **user**'s system needs to have a working ollama setup already:
+Both the **developer** and the **user**'s systems need to have a working ollama setup already:
 
 1. Download and Install [ollama](https://ollama.com/)
 2. Pull a model of choice from the [Library](https://ollama.com/library)
-    - Recommend `llama3.1` for general conversation
+    - Recommend `gemma3:4b` for general conversation
         ```bash
-        ollama pull llama3.1
+        ollama pull gemma3:4b
         ```
-    - Recommend `gemma2:2b` for device with limited memory
+    - Recommend `gemma3:1b` for device with limited memory
         ```bash
-        ollama pull gemma2:2b
+        ollama pull gemma3:1b
         ```
-    - Recommend `llava` for image captioning
+    - Recommend `deepseek-r1:7b` if "reasoning" is needed
         ```bash
-        ollama pull llava
+        ollama pull deepseek-r1:7b
+        ```
+    - Recommend `nomic-embed-text` for generating embeddings *(vectors)*
+        ```bash
+        ollama pull nomic-embed-text
         ```
 
 In **Unity**, you need the `Newtonsoft.Json` package:
@@ -38,10 +42,12 @@ In **Unity**, you need the `Newtonsoft.Json` package:
     ```
 6. Add
 
-## Features
-The following functions are avaliable under the **Ollama** class
+Then, simply download and install the `.unitypackage` from [Releases](https://github.com/Haoming02/ollama-unity/releases)
 
-> All functions are [asynchronous](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async)
+<br>
+
+## Features
+The following functions are available under the **Ollama** `static` class; all functions are [asynchronous](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/async)
 
 - **List()**
     - Return an array of `Model`, representing all locally available models
@@ -70,10 +76,10 @@ The following functions are avaliable under the **Ollama** class
     - Requires either `InitChat()` or `LoadChatHistory()` to be called first
     - **Example:**
         ```
-        >> Tell me a joke
-        "..."
-        >> Explain the joke
-        "..."
+                  "Tell me a joke" <<
+        >> ...
+                "Explain the joke" <<
+        >> ...
         ```
 - **ChatStream()**
     - Same as above
@@ -97,21 +103,22 @@ The following functions are avaliable under the **Ollama** class
     - Initialize the database
     - Requires a model to generate embeddings
         - Can use a different model from the one used in `Ask()`
-        - Can use a regular LLM or a dedicated embedding model, such as `nomic-embed-text`
+
+> [!IMPORTANT]
+> Not all models can generate embeddings
+
 - **AppendData()**
     - Add a context *(**eg.** a document)* to retrieve from
 
-> [!NOTE]
-> How well the RAG performs is dependent on several factors...
+<br>
 
-## Demo
-A demo scene containing 3 demo scripts showcasing various features is included:
+## Demos
+3 demo scenes showcasing various features are included:
 
 - **Generate Demo**
     - `List()`
     - `Generate()`
     - `GenerateJson()`
-    - `KeepAlive.unload_immediately`
 
 - **Chat Demo**
     - `InitChat()`
@@ -121,6 +128,3 @@ A demo scene containing 3 demo scripts showcasing various features is included:
     - `InitRAG()`
     - `AppendData()`
     - `Ask()`
-
-> [!NOTE]
-> Recommended to not enable multiple demos at the same time...
