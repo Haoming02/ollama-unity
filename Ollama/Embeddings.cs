@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using Unity.Mathematics;
 
 namespace ollama
 {
@@ -34,7 +33,7 @@ namespace ollama
                 mag2 += V2[n] * V2[n];
             }
 
-            return dot / math.sqrt(mag1 * mag2);
+            return dot / UnityEngine.Mathf.Sqrt(mag1 * mag2);
         }
     }
 }
