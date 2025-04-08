@@ -60,6 +60,7 @@ The following functions are available under the **Ollama** `static` class; all f
 
 - **Generate()**
     - The most basic function that returns a response when given a model and a prompt
+    - You can also pass a `Texture2D` when using a model with vision capability
 - **GenerateStream()**
     - The streaming variant that returns each word as soon as it's ready
     - Requires a `callback` to handle the chunks
@@ -113,7 +114,7 @@ The following functions are available under the **Ollama** `static` class; all f
 <br>
 
 ## Demos
-3 demo scenes showcasing various features are included:
+4 demo scenes showcasing various features are included:
 
 - **Generate Demo**
     - `List()`
