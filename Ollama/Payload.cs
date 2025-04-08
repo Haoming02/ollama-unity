@@ -145,7 +145,7 @@ namespace ollama
             }
         }
 
-        public static string[] EncodeTextures(Texture2D[] textures, bool fullQuality = false)
+        private static string[] EncodeTextures(Texture2D[] textures, bool fullQuality = true)
         {
             if (textures == null)
                 return null;
@@ -159,7 +159,7 @@ namespace ollama
             return imagesBase64;
         }
 
-        private static string Texture2Base64(Texture2D texture, bool fullQuality = false)
+        private static string Texture2Base64(Texture2D texture, bool fullQuality = true)
         {
             if (texture == null) return null;
             return Convert.ToBase64String(fullQuality ? texture.EncodeToPNG() : texture.EncodeToJPG());

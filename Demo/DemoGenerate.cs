@@ -1,6 +1,5 @@
 using ollama;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -32,7 +31,7 @@ public class DemoGenerate : MonoBehaviour
     public async void OnSubmit(string input)
     {
         llmOutput.text = "processing...";
-        var response = await Task.Run(async () => await Ollama.Generate(modelNames[modelSelection.value], input));
+        var response = await Ollama.Generate(modelNames[modelSelection.value], input);
         llmOutput.text = response;
     }
 
@@ -42,7 +41,7 @@ public class DemoGenerate : MonoBehaviour
         string input = "Calculate the result of 1 + 1, return in a JSON format with a key `answer` and an `int` value.";
 
         llmOutput.text = "calculating...";
-        var response = await Task.Run(async () => await Ollama.GenerateJson<MathResult>(modelNames[modelSelection.value], input));
+        var response = await Ollama.GenerateJson<MathResult>(modelNames[modelSelection.value], input);
         llmOutput.text = $"Answer: {response.answer}";
     }
 

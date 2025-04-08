@@ -176,18 +176,18 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '<align=center><size=200%>RAG Demo</size></align>
+  m_text: '<align=center><size=200%>Image Demo</size></align>
 
 
-    This demo implements
-    <b>R</b>etrieval <b>A</b>ugmented <b>G</b>eneration. It will answer questions
-    based on the 3 provided documents; while also refuse to answer irrelevant questions.
+    This demo allows
+    you to ask a LLM questions regarding a Texture2D.
 
-    On
-    entering Play Mode, it will first generate the embeddings for the 3 documents.
-    Once finished, the Input Field will become available to ask questions.
+    <b>Important:</b> The
+    Texture2D has to be <b>Readable</b> and its compression set to <b>None</b>, in
+    order to be encoded.
 
-'
+    The provided image is a screenshot of the Wikipedia
+    page of LLaMA.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -646,7 +646,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1499857999}
-        m_TargetAssemblyTypeName: DemoRAG, Assembly-CSharp
+        m_TargetAssemblyTypeName: DemoImage, Assembly-CSharp
         m_MethodName: OnSubmit
         m_Mode: 0
         m_Arguments:
@@ -888,16 +888,16 @@ MonoBehaviour:
   m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 12
+  m_fontSizeMax: 36
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
-  m_lineSpacing: 0
+  m_lineSpacing: 24
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
@@ -1015,7 +1015,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: How tall is the Jade Mountain?
+  m_text: What is the license for LLaMA
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1413,17 +1413,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1499857994}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e2a8623aad52664a81e5adbbc84d8b9, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e00e62734d865941850138e9c2b2951, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  embedModel: nomic-embed-text
-  askModel: gemma3:4b
+  visionModel: gemma3:4b
   llmOutput: {fileID: 832344030}
-  userInput: {fileID: 586181265}
-  documents:
-  - {fileID: 4900000, guid: 670f5595806c5024eb44ee5579c2980a, type: 3}
-  - {fileID: 4900000, guid: e417b795e7b24eb4fa2333d689e9909b, type: 3}
-  - {fileID: 4900000, guid: bc1af5b121b8d9a43b20b54b21021040, type: 3}
+  inputImage: {fileID: 2800000, guid: bb6185a146cd31d4aabd11ae4379744a, type: 3}
 --- !u!1 &1502455616
 GameObject:
   m_ObjectHideFlags: 0

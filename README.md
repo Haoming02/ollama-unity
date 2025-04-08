@@ -128,3 +128,6 @@ The following functions are available under the **Ollama** `static` class; all f
     - `InitRAG()`
     - `AppendData()`
     - `Ask()`
+
+- **Image Demo**
+    - `Generate()` with `Texture2D`

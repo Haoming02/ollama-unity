@@ -1,5 +1,4 @@
 using ollama;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -42,7 +41,7 @@ public class DemoRAG : MonoBehaviour
     public async void OnSubmit(string input)
     {
         llmOutput.text = "processing...";
-        var response = await Task.Run(async () => await Ollama.Ask(askModel, input));
+        var response = await Ollama.Ask(askModel, input);
         llmOutput.text = response;
     }
 }

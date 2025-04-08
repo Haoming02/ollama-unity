@@ -1,6 +1,5 @@
 using ollama;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -79,9 +78,7 @@ public class DemoChat : MonoBehaviour
         bold = false;
         italic = false;
 
-        await Task.Run(async () =>
-            await Ollama.ChatStream((string text) => buffer.Enqueue(text), demoModel, input)
-        );
+        await Ollama.ChatStream((string text) => buffer.Enqueue(text), demoModel, input);
 
         llmOutput.text += "</line-height></align>\n";
         isStreaming = false;
