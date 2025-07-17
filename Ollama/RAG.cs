@@ -135,7 +135,7 @@ namespace ollama
             var query = new Message("user", $"Question:\n{prompt}");
             var messages = new List<Message>() { system, query };
 
-            var request = new Request.Chat(model, messages, false, keep_alive);
+            var request = new Request.Chat(model, messages, false, keep_alive, null);
             string payload = JsonConvert.SerializeObject(request);
             var response = await PostRequest<Response.Chat>(payload, Endpoints.CHAT);
             return response.message.content;
@@ -151,7 +151,7 @@ namespace ollama
             var query = new Message("user", $"Question:\n{prompt}");
             var messages = new List<Message>() { system, query };
 
-            var request = new Request.Chat(model, messages, true, keep_alive);
+            var request = new Request.Chat(model, messages, true, keep_alive, null);
             string payload = JsonConvert.SerializeObject(request);
 
             await PostRequestStream(payload, Endpoints.CHAT, (Response.Chat response) =>

@@ -91,7 +91,7 @@ namespace ollama
         {
             ChatHistory.Add(new Message("user", prompt, Texture2Base64(image)));
 
-            var request = new Request.Chat(model, ChatHistory, false, keep_alive);
+            var request = new Request.Chat(model, ChatHistory, false, keep_alive, null);
             string payload = JsonConvert.SerializeObject(request);
             var response = await PostRequest<Response.Chat>(payload, Endpoints.CHAT);
 
@@ -111,6 +111,35 @@ namespace ollama
             return response.message.content;
         }
 
+        /// <summary>Generate a response and the tool(s) to use, from prompt and provided tools</summary>
+        /// <param name="model">Ollama Model Syntax (<b>eg.</b> qwen3:4b)</param>
+        /// <param name="keep_alive">The duration <i>(in seconds)</i> to keep the model in memory</param>
+        /// <param name="tools">The tools (functions) for the LLM to consider</param>
+        /// <returns>response string from the LLM; name and arguments of the <see cref="ToolCall">function(s)</see> to call</returns>
+        public static async Task<(string, ToolCall[])> ChatWithTool(string model, string prompt, int keep_alive = 300, Texture2D image = null, ToolConstructor[] tools = null)
+        {
+            ChatHistory.Add(new Message("user", prompt, Texture2Base64(image)));
+
+            var request = new Request.Chat(model, ChatHistory, false, keep_alive, ConstructTools(tools));
+            string payload = JsonConvert.SerializeObject(request);
+            var response = await PostRequest<Response.Chat>(payload, Endpoints.CHAT);
+
+            ChatHistory.Add(response.message);
+
+            bool system = HasSystemPrompt();
+
+            int _limit = HistoryLimit + (system ? 1 : 0);
+            while (ChatHistory.Count > _limit)
+            {
+                if (system)
+                    ChatHistory.RemoveAt(1);
+                else
+                    ChatHistory.RemoveAt(0);
+            }
+
+            return (response.message.content, response.message.tool_calls);
+        }
+
         /// <summary>Stream a response from prompt, with chat context/history</summary>
         /// <param name="onTextReceived">The callback to handle the streaming chunks</param>
         /// <param name="model">Ollama Model Syntax (<b>eg.</b> gemma3:4b)</param>
@@ -119,7 +148,7 @@ namespace ollama
         {
             ChatHistory.Add(new Message("user", prompt, Texture2Base64(image)));
 
-            var request = new Request.Chat(model, ChatHistory, true, keep_alive);
+            var request = new Request.Chat(model, ChatHistory, true, keep_alive, null);
             string payload = JsonConvert.SerializeObject(request);
             StringBuilder reply = new StringBuilder();
 

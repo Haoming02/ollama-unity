@@ -26,21 +26,23 @@ namespace ollama
                     this.model = model;
                     this.prompt = prompt;
                     this.stream = stream;
-                    this.keep_alive = keep_alive;
                     this.format = format;
                     this.images = images;
+                    this.keep_alive = keep_alive;
                 }
             }
 
             public class Chat : Base
             {
                 public List<Message> messages;
+                public List<Tool> tools;
                 public bool stream;
 
-                public Chat(string model, List<Message> messages, bool stream, int keep_alive)
+                public Chat(string model, List<Message> messages, bool stream, int keep_alive, List<Tool> tools)
                 {
                     this.model = model;
                     this.messages = messages;
+                    this.tools = tools;
                     this.stream = stream;
                     this.keep_alive = keep_alive;
                 }
@@ -136,6 +138,7 @@ namespace ollama
             public string role;
             public string content;
             public string[] images;
+            public ToolCall[] tool_calls;
 
             public Message(string role, string content, string image = null)
             {
@@ -144,6 +147,7 @@ namespace ollama
                 this.images = (image == null) ? null : new string[] { image };
             }
         }
+
 
         private static string[] EncodeTextures(Texture2D[] textures, bool fullQuality = true)
         {
