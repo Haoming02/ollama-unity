@@ -12,7 +12,7 @@ public class DemoImage : MonoBehaviour
     [SerializeField]
     private TMP_Text llmOutput;
 
-    [Header("UI")]
+    [Header("Input")]
     [SerializeField]
     private Texture2D inputImage;
 
