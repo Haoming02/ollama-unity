@@ -29,6 +29,10 @@ Both the **developer** and the **user**'s systems need to have a working ollama 
         ```bash
         ollama pull nomic-embed-text
         ```
+    - Recommend `qwen3:4b` for tool calling
+        ```bash
+        ollama pull qwen3:4b
+        ```
 
 In **Unity**, you need the `Newtonsoft.Json` package:
 
@@ -92,6 +96,10 @@ The following functions are available under the **Ollama** `static` class; all f
 - **LoadChatHistory()**
     - Load the chat history from the specified path
     - Calls `InitChat()` automatically instead if the file does not exist
+- **ChatWithTool()**
+    - A special variant where you can additionally provide a list of `Tools`
+    - The LLM will return which function(s) to call, along with the corresponding arguments
+    - Though, you still need to manually parse and call the function yourself, unless you want to do some `Reflection` shenanigans...
 
 #### RAG
 
@@ -114,7 +122,7 @@ The following functions are available under the **Ollama** `static` class; all f
 <br>
 
 ## Demos
-4 demo scenes showcasing various features are included:
+5 demo scenes showcasing various features are included:
 
 - **Generate Demo**
     - `List()`
@@ -132,3 +140,6 @@ The following functions are available under the **Ollama** `static` class; all f
 
 - **Image Demo**
     - `Generate()` with `Texture2D`
+
+- **Tool Demo**
+    - `ChatWithTool()`
