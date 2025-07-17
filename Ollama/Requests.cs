@@ -42,6 +42,20 @@ namespace ollama
 
                 return JsonConvert.DeserializeObject<T>(result);
             }
+            catch (WebException webEx)
+            {
+                string errorResponse = "";
+
+                if (webEx.Response != null)
+                {
+                    using (var errorStream = webEx.Response.GetResponseStream())
+                    using (var reader = new StreamReader(errorStream))
+                        errorResponse = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                Debug.LogError($"HTTP Error during \"{endpoint}\" PostRequest:\n{webEx.Message}\n{errorResponse}\n{webEx.StackTrace}");
+                return default;
+            }
             catch (Exception e)
             {
                 Debug.LogError($"Error during \"{endpoint}\" PostRequest:\n{e.Message}\n{e.StackTrace}");
@@ -83,6 +97,20 @@ namespace ollama
                         isEnd = response.done;
                     }
             }
+            catch (WebException webEx)
+            {
+                string errorResponse = "";
+
+                if (webEx.Response != null)
+                {
+                    using (var errorStream = webEx.Response.GetResponseStream())
+                    using (var reader = new StreamReader(errorStream))
+                        errorResponse = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                Debug.LogError($"HTTP Error during \"{endpoint}\" PostRequest:\n{webEx.Message}\n{errorResponse}\n{webEx.StackTrace}");
+                return;
+            }
             catch (Exception e)
             {
                 Debug.LogError($"Error during \"{endpoint}\" PostRequestStream:\n{e.Message}\n{e.StackTrace}");
@@ -107,6 +135,20 @@ namespace ollama
                     result = await streamReader.ReadToEndAsync().ConfigureAwait(false);
 
                 return JsonConvert.DeserializeObject<T>(result);
+            }
+            catch (WebException webEx)
+            {
+                string errorResponse = "";
+
+                if (webEx.Response != null)
+                {
+                    using (var errorStream = webEx.Response.GetResponseStream())
+                    using (var reader = new StreamReader(errorStream))
+                        errorResponse = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                Debug.LogError($"HTTP Error during \"{endpoint}\" PostRequest:\n{webEx.Message}\n{errorResponse}\n{webEx.StackTrace}");
+                return default;
             }
             catch (Exception e)
             {
